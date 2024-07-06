@@ -6,30 +6,30 @@
 //
 
 import UIKit
+import Combine
 
 class HomeViewController: UIViewController {
     
     // MARK: - Variables
-    private let homeTitleName: [String] = ["自選股", "成交量排行", "上漲排行", "下跌排行"]
+    private let homeTitleName: [String] = ["自選股", "上漲排行"]
     
     // MARK: - UI Components
     private let homeTableView: UITableView = {
         let tableView = UITableView()
         tableView.register(OptionalStocksTableViewCell.self, forCellReuseIdentifier: OptionalStocksTableViewCell.identifier)
-        tableView.register(StocksVolumeTableViewCell.self, forCellReuseIdentifier: StocksVolumeTableViewCell.identifier)
+        tableView.register(StocksUPTableViewCell.self, forCellReuseIdentifier: StocksUPTableViewCell.identifier)
         return tableView
     }()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.addSubview(homeTableView)
         
         homeTableView.dataSource = self
         homeTableView.delegate = self
         
-        homeTableView.tableHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 300))
+        homeTableView.tableHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 290))
     }
     
     override func viewDidLayoutSubviews() {
@@ -58,7 +58,12 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     
     //設定Row的高度
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 150
+        switch indexPath.section {
+        case 0:
+            return 140
+        default:
+            return 300
+        }
     }
     
     //返回指定位置的cell
@@ -69,7 +74,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: OptionalStocksTableViewCell.identifier, for: indexPath) as? OptionalStocksTableViewCell else { return UITableViewCell() }
             return cell
         default:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksVolumeTableViewCell.identifier, for: indexPath) as? StocksVolumeTableViewCell else { return UITableViewCell() }
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksUPTableViewCell.identifier, for: indexPath) as? StocksUPTableViewCell else { return UITableViewCell() }
             return cell
         }
     }
@@ -77,6 +82,16 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     //返回每個section的標題
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return "\(homeTitleName[section])"
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        guard let header = view as? UITableViewHeaderFooterView else { return }
+        header.textLabel?.font = UIFont.boldSystemFont(ofSize: 24)
+        header.textLabel?.textColor = UIColor.white
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 30
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  StocksVolumeCollectionViewCell.swift
+//  StocksUPCollectionViewCell.swift
 //  NomikStockTW
 //
 //  Created by Pinocchio on 2024/7/5.
@@ -7,16 +7,17 @@
 
 import UIKit
 
-class StocksVolumeCollectionViewCell: UICollectionViewCell {
+class StocksUPCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Variables
-    static let identifier = "StocksVolumeCollectionViewCell"
+    static let identifier = "StocksUPCollectionViewCell"
+    private var viewModel = StockFetchDatasViewModels()
     
     // MARK: - UI Components
-    private let stockTitleNameLabel: UILabel = {
+    private var stockTitleNameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "元大台灣50"
+        label.text = "-----"
         label.textColor = .label
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
@@ -27,7 +28,7 @@ class StocksVolumeCollectionViewCell: UICollectionViewCell {
     private let stockTitleNumLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "0050"
+        label.text = "----"
         label.textColor = .secondaryLabel
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -38,9 +39,9 @@ class StocksVolumeCollectionViewCell: UICollectionViewCell {
     private let stockPriceLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "$193"
+        label.text = "$----"
         label.textColor = .white
-        label.textAlignment = .left
+        label.textAlignment = .right
         label.font = UIFont.systemFont(ofSize: 25, weight: .bold)
         label.numberOfLines = 0
         return label
@@ -49,14 +50,13 @@ class StocksVolumeCollectionViewCell: UICollectionViewCell {
     private let stockIncreasePriceLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "-20(-9.98%)"
+        label.text = "---(----%)"
         label.textColor = .systemGreen
-        label.textAlignment = .left
+        label.textAlignment = .right
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.numberOfLines = 0
         return label
     }()
-    
     
     // MARK: - Lifecycle
     override init(frame: CGRect) {
@@ -75,6 +75,12 @@ class StocksVolumeCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Functions
+    public func configureDatas(with titleName: String, titleNum: String, price: Double, increasePrice: Double, pricePercent: Double) {
+        self.stockTitleNameLabel.text = titleName
+        self.stockTitleNumLabel.text = titleNum
+        self.stockPriceLabel.text = "\(price)"
+        self.stockIncreasePriceLabel.text = "\(increasePrice)(\(pricePercent)%)"
+    }
     // MARK: - Selectors
     // MARK: - UI Setup
     private func configureUI() {
@@ -89,15 +95,15 @@ class StocksVolumeCollectionViewCell: UICollectionViewCell {
             stockTitleNumLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
             stockTitleNumLabel.heightAnchor.constraint(equalToConstant: 20),
             
-            stockPriceLabel.topAnchor.constraint(equalTo: stockTitleNumLabel.bottomAnchor, constant: 20),
-            stockPriceLabel.leadingAnchor.constraint(equalTo: stockTitleNumLabel.leadingAnchor),
+            stockPriceLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
             stockPriceLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
-            stockPriceLabel.heightAnchor.constraint(equalToConstant: 20),
+            stockPriceLabel.heightAnchor.constraint(equalToConstant: 30),
+            stockPriceLabel.widthAnchor.constraint(equalToConstant: 100),
             
-            stockIncreasePriceLabel.topAnchor.constraint(equalTo: stockPriceLabel.bottomAnchor, constant: 5),
-            stockIncreasePriceLabel.leadingAnchor.constraint(equalTo: stockPriceLabel.leadingAnchor),
-            stockIncreasePriceLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
-            stockIncreasePriceLabel.heightAnchor.constraint(equalToConstant: 20),
+            stockIncreasePriceLabel.topAnchor.constraint(equalTo: stockPriceLabel.bottomAnchor),
+            stockIncreasePriceLabel.trailingAnchor.constraint(equalTo: stockPriceLabel.trailingAnchor),
+            stockIncreasePriceLabel.heightAnchor.constraint(equalToConstant: 30),
+            stockIncreasePriceLabel.widthAnchor.constraint(equalToConstant: 120),
         ])
     }
     // MARK: - Extension

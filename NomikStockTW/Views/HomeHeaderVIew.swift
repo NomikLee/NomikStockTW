@@ -197,7 +197,7 @@ class HomeHeaderVIew: UIView {
             topThreeView.topAnchor.constraint(equalTo: profitTodayLabel.bottomAnchor, constant: 20),
             topThreeView.leadingAnchor.constraint(equalTo: titleBalanceLabel.leadingAnchor),
             topThreeView.trailingAnchor.constraint(equalTo: balanceHeaderView.trailingAnchor, constant: -20),
-            topThreeView.bottomAnchor.constraint(equalTo: balanceHeaderView.bottomAnchor, constant: -20),
+            topThreeView.bottomAnchor.constraint(equalTo: balanceHeaderView.bottomAnchor, constant: -10),
             
             topThreeSectionStack.topAnchor.constraint(equalTo: topThreeView.topAnchor, constant: 5),
             topThreeSectionStack.leadingAnchor.constraint(equalTo: topThreeView.leadingAnchor, constant: 15),
