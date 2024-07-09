@@ -12,12 +12,14 @@ class HomeViewController: UIViewController {
     
     // MARK: - Variables
     private let homeTitleName: [String] = ["自選股", "上漲排行"]
+    private let selectionBarView = SelectionBarView()
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
     private let homeTableView: UITableView = {
         let tableView = UITableView()
         tableView.register(OptionalStocksTableViewCell.self, forCellReuseIdentifier: OptionalStocksTableViewCell.identifier)
-        tableView.register(StocksUPTableViewCell.self, forCellReuseIdentifier: StocksUPTableViewCell.identifier)
+        tableView.register(StocksRankTableViewCell.self, forCellReuseIdentifier: StocksRankTableViewCell.identifier)
         return tableView
     }()
     
@@ -30,6 +32,8 @@ class HomeViewController: UIViewController {
         homeTableView.delegate = self
         
         homeTableView.tableHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 290))
+        
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -74,24 +78,39 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: OptionalStocksTableViewCell.identifier, for: indexPath) as? OptionalStocksTableViewCell else { return UITableViewCell() }
             return cell
         default:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksUPTableViewCell.identifier, for: indexPath) as? StocksUPTableViewCell else { return UITableViewCell() }
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksRankTableViewCell.identifier, for: indexPath) as? StocksRankTableViewCell else { return UITableViewCell() }
+            
+            selectionBarView.selectionPublisher.sink { [weak self] selection in
+                switch selection {
+                case .up:
+                    cell.configureSelectNum(with: 0)
+                case .down:
+                    cell.configureSelectNum(with: 1)
+                case .volume:
+                    cell.configureSelectNum(with: 2)
+                case .value:
+                    cell.configureSelectNum(with: 3)
+                }
+            }
+            .store(in: &cancellables)
             return cell
         }
     }
     
-    //返回每個section的標題
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "\(homeTitleName[section])"
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        guard let header = view as? UITableViewHeaderFooterView else { return }
-        header.textLabel?.font = UIFont.boldSystemFont(ofSize: 24)
-        header.textLabel?.textColor = UIColor.white
+    //返回section的內容
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        if section == 1 {
+            return selectionBarView
+        } else{
+            let label = UILabel()
+            label.text = "自選股"
+            label.font = .systemFont(ofSize: 24)
+            return label
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 30
+        return 50
     }
 }
 

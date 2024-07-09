@@ -1,5 +1,5 @@
 //
-//  StocksUPCollectionViewCell.swift
+//  StocksRankCollectionViewCell.swift
 //  NomikStockTW
 //
 //  Created by Pinocchio on 2024/7/5.
@@ -7,10 +7,10 @@
 
 import UIKit
 
-class StocksUPCollectionViewCell: UICollectionViewCell {
+class StocksRankCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Variables
-    static let identifier = "StocksUPCollectionViewCell"
+    static let identifier = "StocksRankCollectionViewCell"
     private var viewModel = StockFetchDatasViewModels()
     
     // MARK: - UI Components

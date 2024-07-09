@@ -1,5 +1,5 @@
 //
-//  SnapshotMoversModels.swift
+//  SnapshotRankModels.swift
 //  NomikStockTW
 //
 //  Created by Pinocchio on 2024/7/6.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct SnapshotMoversModels: Codable {
+struct SnapshotRankModels: Codable {
     let date: String
     let market: String
     let data: [Datas]

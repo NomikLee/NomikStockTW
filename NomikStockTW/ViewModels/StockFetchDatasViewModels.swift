@@ -11,8 +11,10 @@ import Combine
 class StockFetchDatasViewModels: ObservableObject {
     
     // MARK: - Variables
-    @Published var moversUPDatas: SnapshotMoversModels?
-    @Published var moversDOWNDatas: SnapshotMoversModels?
+    @Published var moversUPDatas: SnapshotRankModels?
+    @Published var moversDOWNDatas: SnapshotRankModels?
+    @Published var volumeActivesDatas: SnapshotRankModels?
+    @Published var valueActivesDatas: SnapshotRankModels?
     
     // MARK: - Functions
     func moversUPFetchDatas() {
@@ -34,6 +36,32 @@ class StockFetchDatasViewModels: ObservableObject {
             case .success(let resultDOWNDatas):
                 DispatchQueue.main.async {
                     self?.moversDOWNDatas = resultDOWNDatas
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func volumeActivesFetchDatas(){
+        APIServiceManerger.shared.getSnapshotVolumeActives { [weak self] result in
+            switch result {
+            case .success(let volumeActivesDatas):
+                DispatchQueue.main.async {
+                    self?.volumeActivesDatas = volumeActivesDatas
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func valueActivesFetchDatas(){
+        APIServiceManerger.shared.getSnapshotValueActives { [weak self] result in
+            switch result {
+            case .success(let valueActivesDatas):
+                DispatchQueue.main.async {
+                    self?.valueActivesDatas = valueActivesDatas
                 }
             case .failure(let error):
                 print(error.localizedDescription)

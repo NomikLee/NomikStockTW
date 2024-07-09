@@ -8,7 +8,7 @@
 import Foundation
 
 struct APIConstants {
-    static let apiKey = "YjRlMzVjMDItMTU1OC00MzJlLThlYjMtZjI0MGZlNjIzNGIyIDliYzg3NmI3LWJkNWQtNDUwMS1iZGNhLWMzOWE1NDJlNDMzNA=="
+    static let apiKey = ""
     static let baseURL = "https://api.fugle.tw/marketdata/v1.0/stock"
 }
 
@@ -18,8 +18,7 @@ enum Header: String {
 
 enum Endpoints {
     case snapshotMovers
-    case snapshotActivesVolume
-    case snapshotActivesValue
+    case snapshotActives
     case historicalCandles(String)
     case intradayCandles(String)
     case intradayTicker(String)
@@ -28,9 +27,7 @@ enum Endpoints {
         switch self {
         case .snapshotMovers:
             return "/snapshot/movers/TSE"
-        case .snapshotActivesVolume:
-            return "/snapshot/actives/TSE"
-        case .snapshotActivesValue:
+        case .snapshotActives:
             return "/snapshot/actives/TSE"
         case .historicalCandles(let stockNum):
             return "/historical/candles/\(stockNum)"

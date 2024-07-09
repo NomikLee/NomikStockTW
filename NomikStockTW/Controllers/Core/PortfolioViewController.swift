@@ -13,7 +13,6 @@ class PortfolioViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-
         view.backgroundColor = .systemOrange
     }
     // MARK: - Functions
