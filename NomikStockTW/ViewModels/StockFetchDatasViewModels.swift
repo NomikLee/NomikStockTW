@@ -15,6 +15,8 @@ class StockFetchDatasViewModels: ObservableObject {
     @Published var moversDOWNDatas: SnapshotRankModels?
     @Published var volumeActivesDatas: SnapshotRankModels?
     @Published var valueActivesDatas: SnapshotRankModels?
+    @Published var intradayQuoteDatas: IntradayQuoteModels?
+    @Published var intradayCandlesDatas: IntradayCandlesModels?
     
     // MARK: - Functions
     func moversUPFetchDatas() {
@@ -62,6 +64,32 @@ class StockFetchDatasViewModels: ObservableObject {
             case .success(let valueActivesDatas):
                 DispatchQueue.main.async {
                     self?.valueActivesDatas = valueActivesDatas
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func intradayQuoteFetchDatas(with symbol: String){
+        APIServiceManerger.shared.getIntradayQuote(symbol: symbol) { [weak self] result in
+            switch result {
+            case .success(let intradayQuoteDatas):
+                DispatchQueue.main.async {
+                    self?.intradayQuoteDatas = intradayQuoteDatas
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func intradayCandlesFetchDatas(with symbol: String, timeframe: String){
+        APIServiceManerger.shared.getCandlesData(symbol: symbol, timeframe: timeframe) { [weak self] result in
+            switch result {
+            case .success(let intradayCandlesDatas):
+                DispatchQueue.main.async {
+                    self?.intradayCandlesDatas = intradayCandlesDatas
                 }
             case .failure(let error):
                 print(error.localizedDescription)

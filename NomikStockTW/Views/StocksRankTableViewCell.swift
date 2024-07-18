@@ -8,12 +8,16 @@
 import UIKit
 import Combine
 
+protocol CollectionPushStockRankDelegate: AnyObject {
+    func pushStockRankCollectionCell(_ indexPush: Int, stockCode: String)
+}
 
 class StocksRankTableViewCell: UITableViewCell {
    
     // MARK: - Variables
     static let identifier = "StocksRankTableViewCell"
     private var stockFetchDatasViewModel = StockFetchDatasViewModels()
+    weak var delegate: CollectionPushStockRankDelegate?
     private var selectNum: Int?
     private var cancellables = Set<AnyCancellable>()
     
@@ -76,7 +80,7 @@ class StocksRankTableViewCell: UITableViewCell {
 // MARK: - Extension
 extension StocksRankTableViewCell: UICollectionViewDelegate, UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return stockFetchDatasViewModel.moversUPDatas?.data.count ?? 0
+        return 50
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -128,6 +132,13 @@ extension StocksRankTableViewCell: UICollectionViewDelegate, UICollectionViewDat
             )
         }
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as? StocksRankCollectionViewCell
+        if let title = cell?.stockTitleNumLabel.text {
+            delegate?.pushStockRankCollectionCell(indexPath.row, stockCode: title)
+        }
     }
 }
 

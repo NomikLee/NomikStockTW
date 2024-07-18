@@ -25,7 +25,7 @@ class StocksRankCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let stockTitleNumLabel: UILabel = {
+    public let stockTitleNumLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "----"

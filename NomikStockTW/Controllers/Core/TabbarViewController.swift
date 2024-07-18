@@ -11,10 +11,14 @@ class TabbarViewController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //隱藏 TabBarItem 欄位的字串
+        UITabBarItem.appearance().setTitleTextAttributes([.foregroundColor: UIColor.clear], for: .normal)
+        UITabBarItem.appearance().setTitleTextAttributes([.foregroundColor: UIColor.clear], for: .selected)
 
         let vc1 = HomeViewController()
         let vc2 = PortfolioViewController()
-        let vc3 = PaperTradeViewController()
+        let vc3 = FastOrderViewController()
         let vc4 = HistoryViewController()
         let vc5 = ProfileViewController()
         

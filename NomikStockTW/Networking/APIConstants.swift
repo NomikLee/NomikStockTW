@@ -20,6 +20,7 @@ enum Endpoints {
     case snapshotMovers
     case snapshotActives
     case historicalCandles(String)
+    case intradayQuote(String)
     case intradayCandles(String)
     case intradayTicker(String)
     
@@ -35,6 +36,8 @@ enum Endpoints {
             return "/intraday/candles/\(stockNum)"
         case .intradayTicker(let stockNum):
             return "/intraday/ticker/\(stockNum)"
+        case .intradayQuote(let stockNum):
+            return "/intraday/quote/\(stockNum)"
         }
     }
 }

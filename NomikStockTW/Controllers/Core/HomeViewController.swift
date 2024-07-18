@@ -33,7 +33,6 @@ class HomeViewController: UIViewController {
         
         homeTableView.tableHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 290))
         
-        
     }
     
     override func viewDidLayoutSubviews() {
@@ -48,7 +47,12 @@ class HomeViewController: UIViewController {
 }
 
 // MARK: - Extension
-extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
+extension HomeViewController: UITableViewDataSource, UITableViewDelegate, CollectionPushStockRankDelegate {
+    func pushStockRankCollectionCell(_ indexPush: Int, stockCode: String) {
+        let vc = FastOrderViewController()
+        vc.title = stockCode
+        navigationController?.pushViewController(vc, animated: true)
+    }
     
     //返回section的數量
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -80,6 +84,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
         default:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksRankTableViewCell.identifier, for: indexPath) as? StocksRankTableViewCell else { return UITableViewCell() }
             
+            cell.delegate = self
             selectionBarView.selectionPublisher.sink { [weak self] selection in
                 switch selection {
                 case .up:

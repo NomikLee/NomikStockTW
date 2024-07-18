@@ -17,7 +17,7 @@ class SelectionBarView: UIView {
     // MARK: - Variables
     let selectionPublisher = PassthroughSubject<SelectionType, Never>()
     
-    //didset偵測selectTap變化 只要i與selectTap相同 TitleColor與isActive 就會做三元運算走左邊數值
+    //didset偵測selectTap變化 i與selectTap比對 TitleColor與isActive 做三元運算 再賦值
     private var selectTap: Int = 0 {
         didSet {
             for i in 0..<selectionButtons.count {
