@@ -29,6 +29,8 @@
 		6F562D932C34ED510083ACE3 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F562D922C34ED510083ACE3 /* ProfileViewController.swift */; };
 		6F562D972C34EE680083ACE3 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F562D962C34EE680083ACE3 /* HistoryViewController.swift */; };
 		6F562D992C34FA450083ACE3 /* HomeHeaderVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F562D982C34FA450083ACE3 /* HomeHeaderVIew.swift */; };
+		6F83AA702C4B780600BDC660 /* StartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F83AA6F2C4B780600BDC660 /* StartedViewController.swift */; };
+		6F83AA742C4B7D1B00BDC660 /* LoginRegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F83AA732C4B7D1B00BDC660 /* LoginRegisterViewController.swift */; };
 		6F9ACA052C3901D300283242 /* SnapshotRankModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9ACA042C3901AB00283242 /* SnapshotRankModels.swift */; };
 		6F9ACA072C39137200283242 /* StockFetchDatasViewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9ACA062C39134300283242 /* StockFetchDatasViewModels.swift */; };
 		6F9ACA142C42554600283242 /* DGCharts in Frameworks */ = {isa = PBXBuildFile; productRef = 6F9ACA132C42554600283242 /* DGCharts */; };
@@ -63,6 +65,7 @@
 		6FEB38362C3E7E7B007C03FE /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 6FEB38352C3E7E7B007C03FE /* FirebaseVertexAI-Preview */; };
 		6FFEDBF32C4662F30061669E /* IntradayQuoteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FFEDBF22C4662F30061669E /* IntradayQuoteModels.swift */; };
 		6FFEDBF52C48D3FB0061669E /* IntradayCandlesModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FFEDBF42C48D3EB0061669E /* IntradayCandlesModels.swift */; };
+		6FFEDBF72C4A2DB10061669E /* buySellHalfViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FFEDBF62C4A2DB10061669E /* buySellHalfViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -122,11 +125,14 @@
 		6F562D922C34ED510083ACE3 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		6F562D962C34EE680083ACE3 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		6F562D982C34FA450083ACE3 /* HomeHeaderVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderVIew.swift; sourceTree = "<group>"; };
+		6F83AA6F2C4B780600BDC660 /* StartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartedViewController.swift; sourceTree = "<group>"; };
+		6F83AA732C4B7D1B00BDC660 /* LoginRegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginRegisterViewController.swift; sourceTree = "<group>"; };
 		6F9ACA042C3901AB00283242 /* SnapshotRankModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotRankModels.swift; sourceTree = "<group>"; };
 		6F9ACA062C39134300283242 /* StockFetchDatasViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockFetchDatasViewModels.swift; sourceTree = "<group>"; };
 		6FEB37FC2C3E7DE4007C03FE /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6FFEDBF22C4662F30061669E /* IntradayQuoteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntradayQuoteModels.swift; sourceTree = "<group>"; };
 		6FFEDBF42C48D3EB0061669E /* IntradayCandlesModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntradayCandlesModels.swift; sourceTree = "<group>"; };
+		6FFEDBF62C4A2DB10061669E /* buySellHalfViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = buySellHalfViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -251,7 +257,6 @@
 			isa = PBXGroup;
 			children = (
 				6F9ACA082C422A5B00283242 /* Support */,
-				6F562D912C34E1AF0083ACE3 /* Login */,
 				6F562D902C34E1AB0083ACE3 /* Onboarding */,
 				6F562D8F2C34E1940083ACE3 /* Core */,
 			);
@@ -274,9 +279,9 @@
 				6F562D982C34FA450083ACE3 /* HomeHeaderVIew.swift */,
 				6F2665E82C3BB57700557816 /* SelectionBarView.swift */,
 				6F49A3BB2C368CBF00DBD3D9 /* OptionalStocksTableViewCell.swift */,
-				6F49A3BD2C3793F600DBD3D9 /* OptionalStocksCollectionViewCell.swift */,
 				6F49A3C12C37B2B200DBD3D9 /* StocksRankTableViewCell.swift */,
 				6F49A3BF2C37B02F00DBD3D9 /* StocksRankCollectionViewCell.swift */,
+				6F49A3BD2C3793F600DBD3D9 /* OptionalStocksCollectionViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -314,20 +319,16 @@
 		6F562D902C34E1AB0083ACE3 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				6F83AA6F2C4B780600BDC660 /* StartedViewController.swift */,
+				6F83AA732C4B7D1B00BDC660 /* LoginRegisterViewController.swift */,
 			);
 			path = Onboarding;
-			sourceTree = "<group>";
-		};
-		6F562D912C34E1AF0083ACE3 /* Login */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Login;
 			sourceTree = "<group>";
 		};
 		6F9ACA082C422A5B00283242 /* Support */ = {
 			isa = PBXGroup;
 			children = (
+				6FFEDBF62C4A2DB10061669E /* buySellHalfViewController.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -501,6 +502,8 @@
 			files = (
 				6F562D512C34D9870083ACE3 /* HomeViewController.swift in Sources */,
 				6F562D4D2C34D9870083ACE3 /* AppDelegate.swift in Sources */,
+				6FFEDBF72C4A2DB10061669E /* buySellHalfViewController.swift in Sources */,
+				6F83AA742C4B7D1B00BDC660 /* LoginRegisterViewController.swift in Sources */,
 				6F562D8C2C34DE610083ACE3 /* TabbarViewController.swift in Sources */,
 				6F562D572C34D9870083ACE3 /* NomikStockTW.xcdatamodeld in Sources */,
 				6F562D972C34EE680083ACE3 /* HistoryViewController.swift in Sources */,
@@ -520,6 +523,7 @@
 				6F562D8E2C34DF080083ACE3 /* PortfolioViewController.swift in Sources */,
 				6F9ACA072C39137200283242 /* StockFetchDatasViewModels.swift in Sources */,
 				6F562D4F2C34D9870083ACE3 /* SceneDelegate.swift in Sources */,
+				6F83AA702C4B780600BDC660 /* StartedViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

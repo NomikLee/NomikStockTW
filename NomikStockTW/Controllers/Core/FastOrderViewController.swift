@@ -78,6 +78,9 @@ class FastOrderViewController: UIViewController {
         
         lineView.rightAxis.enabled = false //關閉右邊標籤
         lineView.xAxis.enabled = false //關閉x軸標籤
+        lineView.xAxis.labelCount = 280
+        lineView.xAxis.granularity = 1
+        lineView.xAxis.drawAxisLineEnabled = false
         lineView.xAxis.drawGridLinesEnabled = false //不繪製X軸網格線
         lineView.leftAxis.drawGridLinesEnabled = false //不繪製leftAxis網格線
         
@@ -272,10 +275,8 @@ class FastOrderViewController: UIViewController {
     // MARK: - Functions
     private func binView(){
         
-        if let currentTitle = self.title {
-            stockFetchDatasViewModels.intradayQuoteFetchDatas(with: currentTitle)
-        }
-        
+        guard let currentTitle = self.title else { return }
+        stockFetchDatasViewModels.intradayQuoteFetchDatas(with: currentTitle)
         stockFetchDatasViewModels.$intradayQuoteDatas.sink { [weak self] quoteData in
             self?.fastOrderNameLabel.text = "\(quoteData?.name ?? "---")"
             self?.fastOrderPriceLabel.text = "\(quoteData?.closePrice ?? 0.0)"
@@ -330,19 +331,21 @@ class FastOrderViewController: UIViewController {
     
     private func setLineData() {
         
-        lineChart.clear()
-        lineChart.data = nil
-        lineChart.leftAxis.removeAllLimitLines()
-        lineChart.rightAxis.removeAllLimitLines()
-        lineChart.xAxis.removeAllLimitLines()
-        
         var entrieDatas: [ChartDataEntry] = []
         var avgDatas: [ChartDataEntry] = []
         
-        guard let currentTitle = self.title else { return }
+        //清空舊的數據
+        self.lineChart.data = nil
+        self.lineChart.leftAxis.removeAllLimitLines()
         
+        guard let currentTitle = self.title else { return }
         stockFetchDatasViewModels.intradayCandlesFetchDatas(with: currentTitle, timeframe: "1")
         stockFetchDatasViewModels.$intradayCandlesDatas.sink { [weak self] candlesDatas in
+            
+            //重要 清除[]的數據
+            entrieDatas.removeAll()
+            avgDatas.removeAll()
+            
             if let candlesDatas = candlesDatas?.data {
                 for (index, candles) in candlesDatas.enumerated() {
                     entrieDatas.append(ChartDataEntry(x: Double(index), y: candles.close))
@@ -351,7 +354,7 @@ class FastOrderViewController: UIViewController {
                 
             }
             
-            let set1 = LineChartDataSet(entries: entrieDatas, label: currentTitle)
+            let set1 = LineChartDataSet(entries: entrieDatas, label: self?.fastOrderNameLabel.text ?? "台積電")
             set1.mode = .cubicBezier
             set1.drawCirclesEnabled = false //關閉線圖上的標籤圓點
             set1.drawValuesEnabled = false //關閉線圖上的標籤價格
@@ -365,6 +368,7 @@ class FastOrderViewController: UIViewController {
             set2.colors = [.white]
             set2.lineWidth = 1
             
+            
             let data = LineChartData(dataSets: [set1, set2])
             
             if let candlesDatas = candlesDatas?.data {
@@ -375,8 +379,10 @@ class FastOrderViewController: UIViewController {
             }
             
             DispatchQueue.main.async {
+                self?.lineChart.clear() //清除圖
                 self?.lineChart.data = data
                 self?.lineChart.notifyDataSetChanged()
+                self?.lineChart.setNeedsDisplay()
             }
         }
         .store(in: &cancellables)
@@ -392,8 +398,6 @@ class FastOrderViewController: UIViewController {
         let okAction = UIAlertAction(title: "確定", style: .default) { _ in
             if let text = alert.textFields?.first?.text {
                 self.title = text
-                self.lineChart.removeFromSuperview()
-                self.view.addSubview(self.lineChart)
                 self.binView()
             }
         }
@@ -401,6 +405,16 @@ class FastOrderViewController: UIViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    private func showBuySellHalf(_ buyAndSell: String){
+        let halfVC = buySellHalfViewController(title: buyAndSell)
+        
+        if let sheet = halfVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        
+        present(halfVC, animated: true, completion: nil)
+    }
     private func setTapButton(){
         fastOrderLeadingUpListButton.addTarget(self, action: #selector(didTapBuy), for: .touchUpInside)
         fastOrderTrailingDownListButton.addTarget(self, action: #selector(didTapSell), for: .touchUpInside)
@@ -410,11 +424,11 @@ class FastOrderViewController: UIViewController {
     
     // MARK: - Selectors
     @objc private func didTapBuy(){
-        print("Buy")
+        showBuySellHalf("BUY")
     }
     
     @objc private func didTapSell(){
-        print("Sell")
+        showBuySellHalf("SELL")
     }
     
     @objc private func didAddTradeStock(){
