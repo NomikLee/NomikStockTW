@@ -151,7 +151,7 @@ struct APIServiceManerger {
     func getCandlesData(symbol: String, timeframe: String, completion: @escaping(Result<IntradayCandlesModels, Error>) -> Void) {
         var urlComponents = URLComponents(string: APIConstants.baseURL + Endpoints.intradayCandles(symbol).valueEndpoints())
         
-        var queryItems = [
+        let queryItems = [
             URLQueryItem(name: "timeframe", value: timeframe)
         ]
         

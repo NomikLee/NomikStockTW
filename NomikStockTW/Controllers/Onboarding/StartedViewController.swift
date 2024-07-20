@@ -38,10 +38,22 @@ class StartedViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("Get Started", for: .normal)
         button.tintColor = .black
-        button.layer.borderWidth = 5
+        button.layer.borderWidth = 3
         button.layer.cornerRadius = 20
         button.layer.borderColor = UIColor.black.cgColor
         button.clipsToBounds = true
+        return button
+    }()
+    
+    private let loginButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Login", for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
+        button.backgroundColor = .white
+        button.layer.borderWidth = 3
+        button.layer.cornerRadius = 20
         return button
     }()
     
@@ -49,6 +61,7 @@ class StartedViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(backgroundImageView)
+        view.addSubview(loginButton)
         backgroundImageView.addSubview(enterButton)
         view.addSubview(marqueeTitle)
         
@@ -75,10 +88,16 @@ class StartedViewController: UIViewController {
     }
     
     // MARK: - Selectors
-    @objc func didTapHome() {
-        let loginRegister = LoginRegisterViewController()
-        loginRegister.modalPresentationStyle = .fullScreen
-        present(loginRegister, animated: true)
+    @objc private func didTapLogin() {
+        let loginVC = LoginViewController()
+        loginVC.modalPresentationStyle = .fullScreen
+        present(loginVC, animated: true)
+    }
+    
+    @objc private func didTapRegister() {
+        let registerVC = RegisterViewController()
+        registerVC.modalPresentationStyle = .fullScreen
+        present(registerVC, animated: true)
     }
     
     @objc func updateMarquee() {
@@ -95,7 +114,8 @@ class StartedViewController: UIViewController {
     
     // MARK: - UI Setup
     private func configureUI() {
-        enterButton.addTarget(self, action: #selector(didTapHome), for: .touchUpInside)
+        enterButton.addTarget(self, action: #selector(didTapRegister), for: .touchUpInside)
+        loginButton.addTarget(self, action: #selector(didTapLogin), for: .touchUpInside)
         
         UIView.animate(withDuration: 0.5, delay: 0.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: {
             self.enterButton.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
@@ -107,10 +127,15 @@ class StartedViewController: UIViewController {
             marqueeTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
             marqueeTitle.heightAnchor.constraint(equalToConstant: 150),
             
+            loginButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -80),
+            loginButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
+            loginButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
+            loginButton.heightAnchor.constraint(equalToConstant: 80),
+            
             enterButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 30),
             enterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -30),
-            enterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-            enterButton.heightAnchor.constraint(equalToConstant: 100)
+            enterButton.bottomAnchor.constraint(equalTo: loginButton.topAnchor, constant: -15),
+            enterButton.heightAnchor.constraint(equalToConstant: 100),
             
         ])
     }
