@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class StockFetchDatasViewModels: ObservableObject {
+final class StockFetchDatasViewModels: ObservableObject {
     
     // MARK: - Variables
     @Published var moversUPDatas: SnapshotRankModels?

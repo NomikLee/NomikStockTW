@@ -12,7 +12,7 @@ import Combine
 class FastOrderViewController: UIViewController {
     
     // MARK: - Variables
-    private let stockFetchDatasViewModels = StockFetchDatasViewModels()
+    private let viewModel = StockFetchDatasViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     
@@ -276,8 +276,8 @@ class FastOrderViewController: UIViewController {
     private func binView(){
         
         guard let currentTitle = self.title else { return }
-        stockFetchDatasViewModels.intradayQuoteFetchDatas(with: currentTitle)
-        stockFetchDatasViewModels.$intradayQuoteDatas.sink { [weak self] quoteData in
+        viewModel.intradayQuoteFetchDatas(with: currentTitle)
+        viewModel.$intradayQuoteDatas.sink { [weak self] quoteData in
             self?.fastOrderNameLabel.text = "\(quoteData?.name ?? "---")"
             self?.fastOrderPriceLabel.text = "\(quoteData?.closePrice ?? 0.0)"
             self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
@@ -339,8 +339,8 @@ class FastOrderViewController: UIViewController {
         self.lineChart.leftAxis.removeAllLimitLines()
         
         guard let currentTitle = self.title else { return }
-        stockFetchDatasViewModels.intradayCandlesFetchDatas(with: currentTitle, timeframe: "1")
-        stockFetchDatasViewModels.$intradayCandlesDatas.sink { [weak self] candlesDatas in
+        viewModel.intradayCandlesFetchDatas(with: currentTitle, timeframe: "1")
+        viewModel.$intradayCandlesDatas.sink { [weak self] candlesDatas in
             
             //重要 清除[]的數據
             entrieDatas.removeAll()

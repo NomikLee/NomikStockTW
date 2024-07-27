@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class StartedViewController: UIViewController {
     
@@ -90,14 +91,14 @@ class StartedViewController: UIViewController {
     // MARK: - Selectors
     @objc private func didTapLogin() {
         let loginVC = LoginViewController()
-        loginVC.modalPresentationStyle = .fullScreen
-        present(loginVC, animated: true)
+        loginVC.title = "Login"
+        navigationController?.pushViewController(loginVC, animated: true)
     }
     
     @objc private func didTapRegister() {
         let registerVC = RegisterViewController()
-        registerVC.modalPresentationStyle = .fullScreen
-        present(registerVC, animated: true)
+        registerVC.title = "Register"
+        navigationController?.pushViewController(registerVC, animated: true)
     }
     
     @objc func updateMarquee() {

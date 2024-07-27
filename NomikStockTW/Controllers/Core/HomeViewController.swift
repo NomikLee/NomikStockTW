@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import FirebaseAuth
 
 class HomeViewController: UIViewController {
     
@@ -38,6 +39,15 @@ class HomeViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         homeTableView.frame = view.bounds
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if Auth.auth().currentUser == nil {
+            let vc = UINavigationController(rootViewController: StartedViewController())
+            vc.modalPresentationStyle = .fullScreen
+            present(vc, animated: true)
+        }
     }
     
     // MARK: - Functions
