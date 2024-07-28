@@ -12,7 +12,7 @@ import FirebaseAuth
 class RegisterViewController: UIViewController {
     
     // MARK: - Variables
-    private var viewModel = RegisterViewModels()
+    private var viewModel = AuthViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -175,8 +175,17 @@ class RegisterViewController: UIViewController {
         passwordCheckTextView.addTarget(self, action: #selector(didChangePasswordCheckField), for: .editingChanged)
         firstNameTextView.addTarget(self, action: #selector(didChangeFirstNameField), for: .editingChanged)
         lastNameTextView.addTarget(self, action: #selector(didChangeLastNameField), for: .editingChanged)
-        viewModel.$isRegisterValid.sink { [weak self] valid in
+        
+        viewModel.$isAuthValid.sink { [weak self] valid in
             self?.confirmButton.isEnabled = valid
+        }
+        .store(in: &cancellables)
+        
+        //當創造一個帳號後user不為nil檢查 navigationController 的 viewControllers 組中的第一個viewController是否為 StartedViewController是的話刪除
+        viewModel.$user.sink { [weak self] user in
+            guard user != nil else { return }
+            guard let vc = self?.navigationController?.viewControllers.first as? StartedViewController else { return }
+            vc.dismiss(animated: true)
         }
         .store(in: &cancellables)
     }
@@ -184,31 +193,31 @@ class RegisterViewController: UIViewController {
     // MARK: - Selectors
     @objc private func didChangeLastNameField() {
         viewModel.lastNameText = lastNameTextView.text
-        viewModel.checkRegisterText()
+        viewModel.checkAuthText()
     }
     
     @objc private func didChangeFirstNameField() {
         viewModel.firstNameText = firstNameTextView.text
-        viewModel.checkRegisterText()
+        viewModel.checkAuthText()
     }
     
     @objc private func didChangePasswordCheckField() {
         viewModel.passwordCheckText = passwordCheckTextView.text
-        viewModel.checkRegisterText()
+        viewModel.checkAuthText()
     }
     
     @objc private func didChangePasswordField() {
         viewModel.passwordText = passwordTextView.text
-        viewModel.checkRegisterText()
+        viewModel.checkAuthText()
     }
     
     @objc private func didChangeEmailField() {
         viewModel.emailText = emailTextView.text
-        viewModel.checkRegisterText()
+        viewModel.checkAuthText()
     }
     
     @objc private func didTapRegister() {
-        print("註冊")
+        viewModel.createUser()
     }
     
     @objc private func dismissKeyboard() {

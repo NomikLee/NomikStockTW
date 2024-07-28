@@ -34,6 +34,8 @@ class HomeViewController: UIViewController {
         
         homeTableView.tableHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 290))
         
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "figure.walk.departure"), style: .plain, target: self, action: #selector(didTapUserOut))
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -43,6 +45,11 @@ class HomeViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        checkCurrentUser()
+    }
+    
+    // MARK: - Functions
+    private func checkCurrentUser() {
         if Auth.auth().currentUser == nil {
             let vc = UINavigationController(rootViewController: StartedViewController())
             vc.modalPresentationStyle = .fullScreen
@@ -50,8 +57,12 @@ class HomeViewController: UIViewController {
         }
     }
     
-    // MARK: - Functions
     // MARK: - Selectors
+    @objc private func didTapUserOut() {
+        try? Auth.auth().signOut()
+        checkCurrentUser()
+    }
+    
     // MARK: - UI Setup
 
 }

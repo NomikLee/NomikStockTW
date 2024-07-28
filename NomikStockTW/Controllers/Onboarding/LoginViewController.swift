@@ -11,7 +11,7 @@ import Combine
 class LoginViewController: UIViewController {
 
     // MARK: - Variables
-    private let viewModel = LoginViewModels()
+    private let viewModel = AuthViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -108,25 +108,34 @@ class LoginViewController: UIViewController {
     private func bindView() {
         loginEmailTextView.addTarget(self, action: #selector(didChangeLoginEmailField), for: .editingChanged)
         loginPasswordTextView.addTarget(self, action: #selector(didChangeLoginPasswordField), for: .editingChanged)
-        viewModel.$isCheckLoginValid.sink { [weak self] valid in
+        
+        viewModel.$isAuthValid.sink { [weak self] valid in
             self?.loginButton.isEnabled = valid
+        }
+        .store(in: &cancellables)
+        
+        //當創造一個帳號後user不為nil檢查 navigationController 的 viewControllers 組中的第一個viewController是否為 StartedViewController是的話刪除
+        viewModel.$user.sink { [weak self] user in
+            guard user != nil else { return }
+            guard let vc = self?.navigationController?.viewControllers.first as? StartedViewController else { return }
+            vc.dismiss(animated: true)
         }
         .store(in: &cancellables)
     }
     
     // MARK: - Selectors
     @objc private func didChangeLoginPasswordField() {
-        viewModel.loginPasswordText = loginPasswordTextView.text
-        viewModel.checkLoginValid()
+        viewModel.passwordText = loginPasswordTextView.text
+        viewModel.checkLoginAuthText()
     }
     
     @objc private func didChangeLoginEmailField() {
-        viewModel.loginEmailText = loginEmailTextView.text
-        viewModel.checkLoginValid()
+        viewModel.emailText = loginEmailTextView.text
+        viewModel.checkLoginAuthText()
     }
     
     @objc private func didTapLogin() {
-        print("into login")
+        viewModel.loginUser()
     }
     
     @objc private func dismissKeyboard() {
