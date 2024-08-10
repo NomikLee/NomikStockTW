@@ -9,11 +9,12 @@ import UIKit
 import Combine
 import FirebaseAuth
 
-class HomeViewController: UIViewController {
+class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     // MARK: - Variables
     private let homeTitleName: [String] = ["自選股", "上漲排行"]
     private let selectionBarView = SelectionBarView()
+    private var viewModel = FirestoreViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -32,9 +33,9 @@ class HomeViewController: UIViewController {
         homeTableView.dataSource = self
         homeTableView.delegate = self
         
-        homeTableView.tableHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 290))
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "figure.walk.departure"), style: .plain, target: self, action: #selector(didTapUserOut))
+        let homeHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 240))
+        homeHeaderView.delegate = self
+        homeTableView.tableHeaderView = homeHeaderView
         
     }
     
@@ -51,18 +52,15 @@ class HomeViewController: UIViewController {
     // MARK: - Functions
     private func checkCurrentUser() {
         if Auth.auth().currentUser == nil {
-            let vc = UINavigationController(rootViewController: StartedViewController())
-            vc.modalPresentationStyle = .fullScreen
-            present(vc, animated: true)
+            dismiss(animated: false) {
+                let vc = UINavigationController(rootViewController: StartedViewController())
+                vc.modalPresentationStyle = .fullScreen
+                self.present(vc, animated: true)
+            }
         }
     }
     
     // MARK: - Selectors
-    @objc private func didTapUserOut() {
-        try? Auth.auth().signOut()
-        checkCurrentUser()
-    }
-    
     // MARK: - UI Setup
 
 }
@@ -137,6 +135,23 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate, Collec
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 50
+    }
+}
+
+extension HomeViewController: HomeHeaderViewDelegate {
+    
+    func didTapUserHeaderImage() {
+        let userSettingVC = UserSettingViewController()
+        userSettingVC.delegate = self
+        userSettingVC.modalPresentationStyle = .automatic
+        present(userSettingVC, animated: true)
+    }
+}
+
+extension HomeViewController: logoutDelegate {
+    func logoutButtonTap() {
+        try? Auth.auth().signOut()
+        checkCurrentUser()
     }
 }
 

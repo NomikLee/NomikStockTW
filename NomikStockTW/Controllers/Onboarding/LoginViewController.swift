@@ -117,10 +117,24 @@ class LoginViewController: UIViewController {
         //當創造一個帳號後user不為nil檢查 navigationController 的 viewControllers 組中的第一個viewController是否為 StartedViewController是的話刪除
         viewModel.$user.sink { [weak self] user in
             guard user != nil else { return }
-            guard let vc = self?.navigationController?.viewControllers.first as? StartedViewController else { return }
-            vc.dismiss(animated: true)
+            let loadVC = UINavigationController(rootViewController: ReloadViewController())
+            loadVC.modalPresentationStyle = .fullScreen
+            self?.present(loadVC, animated: false)
         }
         .store(in: &cancellables)
+        
+        viewModel.$error.sink { [weak self] errorString in
+            guard let error = errorString else { return }
+            self?.errorAlert(error)
+        }
+        .store(in: &cancellables)
+    }
+    
+    private func errorAlert(_ error: String) {
+        let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
+        let okButton = UIAlertAction(title: "OK", style: .default)
+        alert.addAction(okButton)
+        present(alert, animated: true)
     }
     
     // MARK: - Selectors

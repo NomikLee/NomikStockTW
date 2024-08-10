@@ -6,11 +6,19 @@
 //
 
 import UIKit
+import Combine
+
+protocol HomeHeaderViewDelegate: AnyObject {
+    func didTapUserHeaderImage()
+}
 
 class HomeHeaderVIew: UIView {
     
     // MARK: - Variables
-    private let labelData = ["006208 50.15%", "0050 40.15%", "2330 10.34%"]
+    weak var delegate: HomeHeaderViewDelegate?
+    
+    private var viewModel = FirestoreViewModels()
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
     private let nameHeaderLabel: UILabel = {
@@ -41,6 +49,7 @@ class HomeHeaderVIew: UIView {
         imageView.backgroundColor = .black
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 25
+        imageView.isUserInteractionEnabled = true
         return imageView
     }()
     
@@ -66,7 +75,7 @@ class HomeHeaderVIew: UIView {
     private let totalBalanceLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "$2,001,580"
+        label.text = ""
         label.font = .systemFont(ofSize: 30, weight: .bold)
         label.textColor = .label
         label.numberOfLines = 0
@@ -85,33 +94,6 @@ class HomeHeaderVIew: UIView {
         return label
     }()
     
-    private let topThreeView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.layer.cornerRadius = 20
-        view.backgroundColor = .systemOrange
-        view.alpha = 0.5
-        view.clipsToBounds = true
-        return view
-    }()
-    
-    private lazy var topThreeLabels: [UILabel] = labelData.map{ titles in
-        let label = UILabel()
-        label.text = titles
-        label.textColor = .darkText
-        label.numberOfLines = 0
-        return label
-    }
-    
-    private lazy var topThreeSectionStack: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: topThreeLabels)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.distribution = .equalCentering
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        return stackView
-    }()
-    
     // MARK: - Lifecycle
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -123,10 +105,12 @@ class HomeHeaderVIew: UIView {
         balanceHeaderView.addSubview(titleBalanceLabel)
         balanceHeaderView.addSubview(totalBalanceLabel)
         balanceHeaderView.addSubview(profitTodayLabel)
-        balanceHeaderView.addSubview(topThreeView)
-        topThreeView.addSubview(topThreeSectionStack)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(userHeaderImageViewTapped))
+        userHeaderImageView.addGestureRecognizer(tapGesture)
         
         configureUI()
+        bindView()
     }
     
     override func layoutSubviews() {
@@ -139,6 +123,14 @@ class HomeHeaderVIew: UIView {
     }
     
     // MARK: - Functions
+    private func bindView() {
+        viewModel.fetchFirestoreMainData()
+        viewModel.$mainDatas.sink { [weak self] data in
+            self?.totalBalanceLabel.text = "\(data["moneny"] ?? 0)"
+        }
+        .store(in: &cancellables)
+    }
+    
     private func setupGradientLayer() {
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [
@@ -150,6 +142,9 @@ class HomeHeaderVIew: UIView {
     }
     
     // MARK: - Selectors
+    @objc private func userHeaderImageViewTapped() {
+        delegate?.didTapUserHeaderImage()
+    }
     
     // MARK: - UI Setup
     private func configureUI() {
@@ -172,7 +167,7 @@ class HomeHeaderVIew: UIView {
             userHeaderImageView.widthAnchor.constraint(equalToConstant: 50),
             
             balanceHeaderView.topAnchor.constraint(equalTo: userHeaderImageView.bottomAnchor, constant: 20),
-            balanceHeaderView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
+            balanceHeaderView.heightAnchor.constraint(equalToConstant: 150),
             balanceHeaderView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
             balanceHeaderView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
         ])
@@ -191,18 +186,9 @@ class HomeHeaderVIew: UIView {
             
             profitTodayLabel.topAnchor.constraint(equalTo: totalBalanceLabel.bottomAnchor, constant: 10),
             profitTodayLabel.leadingAnchor.constraint(equalTo: totalBalanceLabel.leadingAnchor),
-            profitTodayLabel.trailingAnchor.constraint(equalTo: titleBalanceLabel.trailingAnchor),
-            profitTodayLabel.heightAnchor.constraint(equalToConstant: 20),
+            profitTodayLabel.trailingAnchor.constraint(equalTo: totalBalanceLabel.trailingAnchor),
+            profitTodayLabel.heightAnchor.constraint(equalToConstant: 30)
             
-            topThreeView.topAnchor.constraint(equalTo: profitTodayLabel.bottomAnchor, constant: 20),
-            topThreeView.leadingAnchor.constraint(equalTo: titleBalanceLabel.leadingAnchor),
-            topThreeView.trailingAnchor.constraint(equalTo: balanceHeaderView.trailingAnchor, constant: -20),
-            topThreeView.bottomAnchor.constraint(equalTo: balanceHeaderView.bottomAnchor, constant: -10),
-            
-            topThreeSectionStack.topAnchor.constraint(equalTo: topThreeView.topAnchor, constant: 5),
-            topThreeSectionStack.leadingAnchor.constraint(equalTo: topThreeView.leadingAnchor, constant: 15),
-            topThreeSectionStack.trailingAnchor.constraint(equalTo: topThreeView.trailingAnchor, constant: -15),
-            topThreeSectionStack.bottomAnchor.constraint(equalTo: topThreeView.bottomAnchor, constant: -5),
         ])
     }
     

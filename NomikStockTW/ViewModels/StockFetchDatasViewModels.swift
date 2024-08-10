@@ -17,83 +17,120 @@ final class StockFetchDatasViewModels: ObservableObject {
     @Published var valueActivesDatas: SnapshotRankModels?
     @Published var intradayQuoteDatas: IntradayQuoteModels?
     @Published var intradayCandlesDatas: IntradayCandlesModels?
+    @Published var favoritesIntradayQuoteDatas: IntradayQuoteModels?
+    
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Functions
     func moversUPFetchDatas() {
-        APIServiceManerger.shared.getSnapshotUPMovers { [weak self] result in
-            switch result {
-            case .success(let resultUPDatas):
-                DispatchQueue.main.async {
-                    self?.moversUPDatas = resultUPDatas
+        APIServiceManerger.shared.getSnapshotUPMovers()
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
                 }
-            case .failure(let error):
-                print(error.localizedDescription)
+            } receiveValue: { [weak self] moversUPData in
+                self?.moversUPDatas = moversUPData
             }
-        }
+            .store(in: &cancellables)
     }
     
     func moversDOWNFetchDatas() {
-        APIServiceManerger.shared.getSnapshotDownMovers { [weak self] result in
-            switch result {
-            case .success(let resultDOWNDatas):
-                DispatchQueue.main.async {
-                    self?.moversDOWNDatas = resultDOWNDatas
+        APIServiceManerger.shared.getSnapshotDownMovers()
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
                 }
-            case .failure(let error):
-                print(error.localizedDescription)
+            } receiveValue: { [weak self] moversDOWNData in
+                self?.moversDOWNDatas = moversDOWNData
             }
-        }
+            .store(in: &cancellables)
     }
     
     func volumeActivesFetchDatas(){
-        APIServiceManerger.shared.getSnapshotVolumeActives { [weak self] result in
-            switch result {
-            case .success(let volumeActivesDatas):
-                DispatchQueue.main.async {
-                    self?.volumeActivesDatas = volumeActivesDatas
+        APIServiceManerger.shared.getSnapshotVolumeActives()
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
                 }
-            case .failure(let error):
-                print(error.localizedDescription)
+            } receiveValue: { [weak self] volumeActivesData in
+                self?.volumeActivesDatas = volumeActivesData
             }
-        }
+            .store(in: &cancellables)
     }
     
     func valueActivesFetchDatas(){
-        APIServiceManerger.shared.getSnapshotValueActives { [weak self] result in
-            switch result {
-            case .success(let valueActivesDatas):
-                DispatchQueue.main.async {
-                    self?.valueActivesDatas = valueActivesDatas
+        APIServiceManerger.shared.getSnapshotValueActives()
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
                 }
-            case .failure(let error):
-                print(error.localizedDescription)
+            } receiveValue: { [weak self] valueActivesData in
+                self?.valueActivesDatas = valueActivesData
             }
-        }
+            .store(in: &cancellables)
     }
     
     func intradayQuoteFetchDatas(with symbol: String){
-        APIServiceManerger.shared.getIntradayQuote(symbol: symbol) { [weak self] result in
-            switch result {
-            case .success(let intradayQuoteDatas):
-                DispatchQueue.main.async {
-                    self?.intradayQuoteDatas = intradayQuoteDatas
+        APIServiceManerger.shared.getIntradayQuote(symbol: symbol)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
                 }
-            case .failure(let error):
-                print(error.localizedDescription)
+            } receiveValue: { [weak self] intradayQuoteData in
+                self?.intradayQuoteDatas = intradayQuoteData
             }
-        }
+            .store(in: &cancellables)
     }
     
     func intradayCandlesFetchDatas(with symbol: String, timeframe: String){
-        APIServiceManerger.shared.getCandlesData(symbol: symbol, timeframe: timeframe) { [weak self] result in
-            switch result {
-            case .success(let intradayCandlesDatas):
-                DispatchQueue.main.async {
-                    self?.intradayCandlesDatas = intradayCandlesDatas
+        APIServiceManerger.shared.getCandlesData(symbol: symbol, timeframe: timeframe)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
                 }
-            case .failure(let error):
-                print(error.localizedDescription)
+            } receiveValue: { [weak self] intradayCandlesData in
+                self?.intradayCandlesDatas = intradayCandlesData
             }
-        }
+            .store(in: &cancellables)
+    }
+    
+    func favoritesIntradayQuoteFetchDatas(with symbol: String){
+        APIServiceManerger.shared.getFavoritesIntradayQuote(symbol: symbol)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            } receiveValue: { [weak self] favoritesIntradayQuoteData in
+                self?.favoritesIntradayQuoteDatas = favoritesIntradayQuoteData
+            }
+            .store(in: &cancellables)
     }
 }

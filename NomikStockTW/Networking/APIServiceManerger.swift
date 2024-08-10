@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 struct APIServiceManerger {
     
@@ -15,8 +16,7 @@ struct APIServiceManerger {
     // MARK: - Functions
     
     //Get上漲排行數據
-    func getSnapshotUPMovers(completion: @escaping ((Result<SnapshotRankModels, Error>) -> Void)) {
-        
+    func getSnapshotUPMovers() -> AnyPublisher<SnapshotRankModels, Error> {
         var urlComponents = URLComponents(string: APIConstants.baseURL + Endpoints.snapshotMovers.valueEndpoints())
         
         let queryItems = [
@@ -26,25 +26,22 @@ struct APIServiceManerger {
         
         urlComponents?.queryItems = queryItems
         
-        guard let url = urlComponents?.url else { return }
+        guard let url = urlComponents?.url else { return Fail(error: URLError(.badURL)).eraseToAnyPublisher() }
+        
         var request = URLRequest(url: url)
         request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
         
-        let tast = URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil else { return }
-            
-            do {
-                let moveruUpDatas = try JSONDecoder().decode(SnapshotRankModels.self, from: data)
-                completion(.success(moveruUpDatas))
-            }catch {
-                completion(.failure(error))
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map{ $0.data }
+            .decode(type: SnapshotRankModels.self, decoder: JSONDecoder())
+            .mapError{ error in
+                return error as? URLError ?? URLError(.unknown)
             }
-        }
-        tast.resume()
+            .eraseToAnyPublisher()
     }
     
     //Get下跌排行數據
-    func getSnapshotDownMovers(completion: @escaping(Result<SnapshotRankModels, Error>) -> Void) {
+    func getSnapshotDownMovers() -> AnyPublisher<SnapshotRankModels, Error> {
         var urlComponents = URLComponents(string: APIConstants.baseURL + Endpoints.snapshotMovers.valueEndpoints())
         
         let queryItem = [
@@ -54,25 +51,22 @@ struct APIServiceManerger {
         
         urlComponents?.queryItems = queryItem
         
-        guard let url = urlComponents?.url else { return }
+        guard let url = urlComponents?.url else { return Fail(error: URLError(.badURL)).eraseToAnyPublisher() }
+        
         var request = URLRequest(url: url)
         request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
         
-        let tast = URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil else { return }
-            
-            do {
-                let moveruUpDatas = try JSONDecoder().decode(SnapshotRankModels.self, from: data)
-                completion(.success(moveruUpDatas))
-            }catch {
-                completion(.failure(error))
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map{ $0.data }
+            .decode(type: SnapshotRankModels.self, decoder: JSONDecoder())
+            .mapError{ error in
+                return error as? URLError ?? URLError(.unknown)
             }
-        }
-        tast.resume()
+            .eraseToAnyPublisher()
     }
     
     //Get成交量排行
-    func getSnapshotVolumeActives(completion: @escaping(Result<SnapshotRankModels, Error>) -> Void) {
+    func getSnapshotVolumeActives() -> AnyPublisher<SnapshotRankModels, Error> {
         var urlComponents = URLComponents(string: APIConstants.baseURL + Endpoints.snapshotActives.valueEndpoints())
         
         let queryItems = [
@@ -81,26 +75,22 @@ struct APIServiceManerger {
         
         urlComponents?.queryItems = queryItems
         
-        guard let url = urlComponents?.url else { return }
+        guard let url = urlComponents?.url else { return Fail(error: URLError(.badURL)).eraseToAnyPublisher() }
         
         var request = URLRequest(url: url)
         request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
         
-        let tast = URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil else { return }
-            
-            do {
-                let volumeActivesDatas = try JSONDecoder().decode(SnapshotRankModels.self, from: data)
-                completion(.success(volumeActivesDatas))
-            }catch {
-                completion(.failure(error))
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map{ $0.data }
+            .decode(type: SnapshotRankModels.self, decoder: JSONDecoder())
+            .mapError { error in
+                return error as? URLError ?? URLError(.unknown)
             }
-        }
-        tast.resume()
+            .eraseToAnyPublisher()
     }
     
     //Get成交值排行
-    func getSnapshotValueActives(completion: @escaping(Result<SnapshotRankModels, Error>) -> Void) {
+    func getSnapshotValueActives() -> AnyPublisher<SnapshotRankModels, Error> {
         var urlComponents = URLComponents(string: APIConstants.baseURL + Endpoints.snapshotActives.valueEndpoints())
         
         let queryItems = [
@@ -109,46 +99,38 @@ struct APIServiceManerger {
         
         urlComponents?.queryItems = queryItems
         
-        guard let url = urlComponents?.url else { return }
+        guard let url = urlComponents?.url else { return Fail(error: URLError(.badURL)).eraseToAnyPublisher() }
         
         var request = URLRequest(url: url)
         request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
         
-        let tast = URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil else { return }
-            
-            do {
-                let valueActivesDatas = try JSONDecoder().decode(SnapshotRankModels.self, from: data)
-                completion(.success(valueActivesDatas))
-            }catch {
-                completion(.failure(error))
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map{ $0.data }
+            .decode(type: SnapshotRankModels.self, decoder: JSONDecoder())
+            .mapError { error in
+                return error as? URLError ?? URLError(.unknown)
             }
-        }
-        tast.resume()
+            .eraseToAnyPublisher()
     }
     
     //Get即時數據
-    func getIntradayQuote(symbol: String, completion: @escaping(Result<IntradayQuoteModels, Error>) -> Void) {
+    func getIntradayQuote(symbol: String) -> AnyPublisher<IntradayQuoteModels, Error> {
         var url = URL(string: APIConstants.baseURL + Endpoints.intradayQuote(symbol).valueEndpoints())
         
         var request = URLRequest(url: url!)
         request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
         
-        let tast = URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil else { return }
-            
-            do {
-                let intradayQuoteDatas = try JSONDecoder().decode(IntradayQuoteModels.self, from: data)
-                completion(.success(intradayQuoteDatas))
-            }catch {
-                completion(.failure(error))
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map{ $0.data }
+            .decode(type: IntradayQuoteModels.self, decoder: JSONDecoder())
+            .mapError { error in
+                return error as? URLError ?? URLError(.unknown)
             }
-        }
-        tast.resume()
+            .eraseToAnyPublisher()
     }
     
     //Get k棒數據
-    func getCandlesData(symbol: String, timeframe: String, completion: @escaping(Result<IntradayCandlesModels, Error>) -> Void) {
+    func getCandlesData(symbol: String, timeframe: String) -> AnyPublisher<IntradayCandlesModels, Error> {
         var urlComponents = URLComponents(string: APIConstants.baseURL + Endpoints.intradayCandles(symbol).valueEndpoints())
         
         let queryItems = [
@@ -156,21 +138,33 @@ struct APIServiceManerger {
         ]
         
         urlComponents?.queryItems = queryItems
-        guard let url = urlComponents?.url else { return }
+        guard let url = urlComponents?.url else { return Fail(error: URLError(.badURL)).eraseToAnyPublisher() }
         
         var request = URLRequest(url: url)
         request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
         
-        let task = URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil else { return }
-            
-            do {
-                let intradayCandlesDatas = try JSONDecoder().decode(IntradayCandlesModels.self, from: data)
-                completion(.success(intradayCandlesDatas))
-            }catch {
-                completion(.failure(error))
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map{ $0.data }
+            .decode(type: IntradayCandlesModels.self, decoder: JSONDecoder())
+            .mapError { error in
+                return error as? URLError ?? URLError(.unknown)
             }
-        }
-        task.resume()
+            .eraseToAnyPublisher()
+    }
+    
+    //Get自選股即時數據
+    func getFavoritesIntradayQuote(symbol: String) -> AnyPublisher<IntradayQuoteModels, Error> {
+        let url = URL(string: APIConstants.baseURL + Endpoints.intradayQuote(symbol).valueEndpoints())
+        
+        var request = URLRequest(url: url!)
+        request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
+        
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map { $0.data }
+            .decode(type: IntradayQuoteModels.self, decoder: JSONDecoder())
+            .mapError { error in
+                return error as? URLError ?? URLError(.unknown)
+            }
+            .eraseToAnyPublisher()
     }
 }

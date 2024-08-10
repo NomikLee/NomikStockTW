@@ -16,7 +16,6 @@ class OptionalStocksCollectionViewCell: UICollectionViewCell {
     private let stockTitleNameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "台積電"
         label.textColor = .label
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
@@ -27,7 +26,6 @@ class OptionalStocksCollectionViewCell: UICollectionViewCell {
     private let stockTitleNumLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "2330"
         label.textColor = .secondaryLabel
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -38,7 +36,6 @@ class OptionalStocksCollectionViewCell: UICollectionViewCell {
     private let stockPriceLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "$1010"
         label.textColor = .white
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 25, weight: .bold)
@@ -49,7 +46,6 @@ class OptionalStocksCollectionViewCell: UICollectionViewCell {
     private let stockIncreasePriceLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "-120(-9.98%)"
         label.textColor = .systemGreen
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -75,6 +71,12 @@ class OptionalStocksCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Functions
+    public func configure(with stockName: String, stockNum: String, stockPrice: String, stockIncreasePrice: String) {
+        self.stockTitleNameLabel.text = stockName
+        self.stockTitleNumLabel.text = stockNum
+        self.stockPriceLabel.text = stockPrice
+        self.stockIncreasePriceLabel.text = stockIncreasePrice
+    }
     // MARK: - Selectors
     // MARK: - UI Setup
     private func configureUI() {

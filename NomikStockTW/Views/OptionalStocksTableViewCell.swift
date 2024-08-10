@@ -6,11 +6,17 @@
 //
 
 import UIKit
+import Combine
 
 class OptionalStocksTableViewCell: UITableViewCell {
     
     // MARK: - Variables
     static let identifier = "OptionalStocksTableViewCell"
+    private let firestoreViewModel = FirestoreViewModels()
+    private let stockFetchDatasViewModel = StockFetchDatasViewModels()
+    private var stockList: [String] = []
+    private var stockDataDict: [String: IntradayQuoteModels] = [:]
+    private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
     private let collectionView: UICollectionView = {
@@ -33,6 +39,8 @@ class OptionalStocksTableViewCell: UITableViewCell {
         
         collectionView.delegate = self
         collectionView.dataSource = self
+        
+        bindView()
     }
     
     required init?(coder: NSCoder) {
@@ -45,24 +53,54 @@ class OptionalStocksTableViewCell: UITableViewCell {
     }
     
     // MARK: - Functions
+    private func bindView(){
+        firestoreViewModel.fetchFavoritesCollection()
+        firestoreViewModel.$favoritesDatas
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.stockList = data.flatMap { $0.keys }
+                self?.fetchFavoritesStockData()
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func fetchFavoritesStockData() {
+        for symbol in stockList {
+            stockFetchDatasViewModel.favoritesIntradayQuoteFetchDatas(with: symbol)
+        }
+        
+        stockFetchDatasViewModel.$favoritesIntradayQuoteDatas
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] favoritesQuoteDatas in
+                guard let favoritesData = favoritesQuoteDatas else { return }
+                self?.stockDataDict[favoritesData.symbol] = favoritesQuoteDatas
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
+    }
     // MARK: - Selectors
     // MARK: - UI Setup
-    
-    
 }
 
 // MARK: - Extension
 extension OptionalStocksTableViewCell: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        return stockList.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: OptionalStocksCollectionViewCell.identifier, for: indexPath) as? OptionalStocksCollectionViewCell else { return UICollectionViewCell() }
         cell.backgroundColor = .systemPink
         cell.layer.cornerRadius = 20
+        
+        let symbol = stockList[indexPath.row]
+        if let stockData = stockDataDict[symbol] {
+            cell.configure(with: stockData.name, stockNum: stockData.symbol, stockPrice: "\(stockData.closePrice)", stockIncreasePrice: "\(stockData.change)(\(stockData.changePercent)%)")
+        } else {
+            cell.configure(with: "", stockNum: "", stockPrice: "", stockIncreasePrice: "")
+        }
         return cell
     }
-    
 }

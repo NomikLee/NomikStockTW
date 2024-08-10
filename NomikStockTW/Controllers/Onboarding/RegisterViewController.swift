@@ -14,8 +14,27 @@ class RegisterViewController: UIViewController {
     // MARK: - Variables
     private var viewModel = AuthViewModels()
     private var cancellables = Set<AnyCancellable>()
+    private let genderData = ["Male", "Female"]
+    
     
     // MARK: - UI Components
+    private let gradientLayer: CAGradientLayer = {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [
+            UIColor.black.cgColor,
+            UIColor.systemBlue.cgColor
+        ]
+        return gradientLayer
+    }()
+    
+    private let registerScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.isScrollEnabled = true
+        scrollView.isDirectionalLockEnabled = false
+        scrollView.showsHorizontalScrollIndicator = true
+        return scrollView
+    }()
+    
     private let emailTitleLable: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -113,6 +132,56 @@ class RegisterViewController: UIViewController {
         return textfield
     }()
     
+    private let genderTitleLable: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Gender"
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        return label
+    }()
+    
+    private let genderTextView: UITextField = {
+        let textfield = UITextField()
+        textfield.translatesAutoresizingMaskIntoConstraints = false
+        textfield.backgroundColor = .white
+        textfield.textColor = .black
+        textfield.layer.cornerRadius = 10
+        textfield.textAlignment = .center
+        textfield.attributedPlaceholder = NSAttributedString(string: " 您的性別是...", attributes: [NSAttributedString.Key.foregroundColor : UIColor.gray])
+        return textfield
+    }()
+    
+    private let genderPickerview: UIPickerView = {
+        let pickerView = UIPickerView()
+        return pickerView
+    }()
+    
+    private let birthdayTitleLable: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "birthday"
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        return label
+    }()
+    
+    private let birthdayTextView: UITextField = {
+        let textfield = UITextField()
+        textfield.translatesAutoresizingMaskIntoConstraints = false
+        textfield.backgroundColor = .white
+        textfield.textColor = .black
+        textfield.layer.cornerRadius = 10
+        textfield.textAlignment = .center
+        textfield.attributedPlaceholder = NSAttributedString(string: " 你的生日19900614...", attributes: [ NSAttributedString.Key.foregroundColor : UIColor.gray] )
+        return textfield
+    }()
+    
+    private let birthdayDatePicker: UIDatePicker = {
+        let datePicker = UIDatePicker()
+        datePicker.datePickerMode = .date
+        datePicker.preferredDatePickerStyle = .wheels
+        return datePicker
+    }()
+    
     private let confirmButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -125,39 +194,43 @@ class RegisterViewController: UIViewController {
         button.isEnabled = false
         return button
     }()
+
     
-    private let gradientLayer: CAGradientLayer = {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [
-            UIColor.black.cgColor,
-            UIColor.systemBlue.cgColor
-        ]
-        return gradientLayer
-    }()
-        
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .always
         
-        view.layer.insertSublayer(gradientLayer, at: 0)
-        view.addSubview(emailTitleLable)
-        view.addSubview(emailTextView)
-        view.addSubview(passwordTitleLable)
-        view.addSubview(passwordTextView)
-        view.addSubview(passwordCheckTitleLable)
-        view.addSubview(passwordCheckTextView)
-        view.addSubview(firstNameTitleLable)
-        view.addSubview(firstNameTextView)
-        view.addSubview(lastNameTitleLable)
-        view.addSubview(lastNameTextView)
-        view.addSubview(confirmButton)
+        view.addSubview(registerScrollView)
+        registerScrollView.layer.insertSublayer(gradientLayer, at: 0)
+        registerScrollView.addSubview(emailTitleLable)
+        registerScrollView.addSubview(emailTextView)
+        registerScrollView.addSubview(passwordTitleLable)
+        registerScrollView.addSubview(passwordTextView)
+        registerScrollView.addSubview(passwordCheckTitleLable)
+        registerScrollView.addSubview(passwordCheckTextView)
+        registerScrollView.addSubview(firstNameTitleLable)
+        registerScrollView.addSubview(firstNameTextView)
+        registerScrollView.addSubview(lastNameTitleLable)
+        registerScrollView.addSubview(lastNameTextView)
+        registerScrollView.addSubview(genderTitleLable)
+        registerScrollView.addSubview(genderTextView)
+        registerScrollView.addSubview(birthdayTitleLable)
+        registerScrollView.addSubview(birthdayTextView)
+        registerScrollView.addSubview(confirmButton)
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
+        registerScrollView.addGestureRecognizer(tapGesture)
         
         confirmButton.addTarget(self, action: #selector(didTapRegister), for: .touchUpInside)
+        
+        genderPickerview.dataSource = self
+        genderPickerview.delegate = self
+        birthdayDatePicker.addTarget(self, action: #selector(dateSelectChange), for: .valueChanged)
+        
+        genderTextView.inputView = genderPickerview
+        birthdayTextView.inputView = birthdayDatePicker
         
         configureUI()
         bindViews()
@@ -165,8 +238,11 @@ class RegisterViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        gradientLayer.frame = view.bounds
+        registerScrollView.frame = view.bounds
+        registerScrollView.contentSize = CGSize(width: view.bounds.width, height: view.bounds.height * 1.01)
+        gradientLayer.frame = CGRect(origin: .zero, size: registerScrollView.contentSize)
     }
+    
     
     // MARK: - Functions
     private func bindViews() {
@@ -184,11 +260,26 @@ class RegisterViewController: UIViewController {
         //當創造一個帳號後user不為nil檢查 navigationController 的 viewControllers 組中的第一個viewController是否為 StartedViewController是的話刪除
         viewModel.$user.sink { [weak self] user in
             guard user != nil else { return }
-            guard let vc = self?.navigationController?.viewControllers.first as? StartedViewController else { return }
-            vc.dismiss(animated: true)
+            let loadVC = UINavigationController(rootViewController: ReloadViewController())
+            loadVC.modalPresentationStyle = .fullScreen
+            self?.present(loadVC, animated: false)
+        }
+        .store(in: &cancellables)
+        
+        viewModel.$error.sink { [weak self] errorString in
+            guard let error = errorString else { return }
+            self?.errorAlert(error)
         }
         .store(in: &cancellables)
     }
+    
+    private func errorAlert(_ error: String) {
+        let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
+        let okButton = UIAlertAction(title: "OK", style: .default)
+        alert.addAction(okButton)
+        present(alert, animated: true)
+    }
+    
     
     // MARK: - Selectors
     @objc private func didChangeLastNameField() {
@@ -220,69 +311,120 @@ class RegisterViewController: UIViewController {
         viewModel.createUser()
     }
     
+    @objc private func dateSelectChange(){
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        birthdayTextView.text = formatter.string(from: birthdayDatePicker.date)
+        viewModel.birthdayText = birthdayTextView.text
+        viewModel.checkAuthText()
+    }
+    
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
+    
     
     // MARK: - UI Setup
     private func configureUI(){
         NSLayoutConstraint.activate([
             emailTitleLable.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             emailTitleLable.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            emailTitleLable.topAnchor.constraint(equalTo: view.topAnchor, constant: 200),
-            emailTitleLable.heightAnchor.constraint(equalToConstant: 50),
+            emailTitleLable.topAnchor.constraint(equalTo: registerScrollView.topAnchor),
+            emailTitleLable.heightAnchor.constraint(equalToConstant: 40),
             
             emailTextView.leadingAnchor.constraint(equalTo: emailTitleLable.leadingAnchor),
             emailTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             emailTextView.topAnchor.constraint(equalTo: emailTitleLable.bottomAnchor),
-            emailTextView.heightAnchor.constraint(equalToConstant: 50),
+            emailTextView.heightAnchor.constraint(equalToConstant: 40),
             
-            passwordTitleLable.leadingAnchor.constraint(equalTo: emailTextView.leadingAnchor),
-            passwordTitleLable.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            passwordTitleLable.topAnchor.constraint(equalTo: emailTextView.bottomAnchor, constant: 5),
-            passwordTitleLable.heightAnchor.constraint(equalToConstant: 50),
+            passwordTitleLable.leadingAnchor.constraint(equalTo: emailTitleLable.leadingAnchor),
+            passwordTitleLable.trailingAnchor.constraint(equalTo: emailTitleLable.trailingAnchor),
+            passwordTitleLable.topAnchor.constraint(equalTo: emailTextView.bottomAnchor, constant: 1),
+            passwordTitleLable.heightAnchor.constraint(equalToConstant: 40),
             
-            passwordTextView.leadingAnchor.constraint(equalTo: passwordTitleLable.leadingAnchor),
+            passwordTextView.leadingAnchor.constraint(equalTo: emailTextView.leadingAnchor),
             passwordTextView.trailingAnchor.constraint(equalTo: emailTextView.trailingAnchor),
             passwordTextView.topAnchor.constraint(equalTo: passwordTitleLable.bottomAnchor),
-            passwordTextView.heightAnchor.constraint(equalToConstant: 50),
+            passwordTextView.heightAnchor.constraint(equalToConstant: 40),
             
-            passwordCheckTitleLable.leadingAnchor.constraint(equalTo: passwordTextView.leadingAnchor),
-            passwordCheckTitleLable.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            passwordCheckTitleLable.topAnchor.constraint(equalTo: passwordTextView.bottomAnchor, constant: 5),
-            passwordCheckTitleLable.heightAnchor.constraint(equalToConstant: 50),
+            passwordCheckTitleLable.leadingAnchor.constraint(equalTo: emailTitleLable.leadingAnchor),
+            passwordCheckTitleLable.trailingAnchor.constraint(equalTo: emailTitleLable.trailingAnchor),
+            passwordCheckTitleLable.topAnchor.constraint(equalTo: passwordTextView.bottomAnchor, constant: 1),
+            passwordCheckTitleLable.heightAnchor.constraint(equalToConstant: 40),
             
-            passwordCheckTextView.leadingAnchor.constraint(equalTo: passwordCheckTitleLable.leadingAnchor),
-            passwordCheckTextView.trailingAnchor.constraint(equalTo: passwordTextView.trailingAnchor),
+            passwordCheckTextView.leadingAnchor.constraint(equalTo: emailTextView.leadingAnchor),
+            passwordCheckTextView.trailingAnchor.constraint(equalTo: emailTextView.trailingAnchor),
             passwordCheckTextView.topAnchor.constraint(equalTo: passwordCheckTitleLable.bottomAnchor),
-            passwordCheckTextView.heightAnchor.constraint(equalToConstant: 50),
+            passwordCheckTextView.heightAnchor.constraint(equalToConstant: 40),
             
             firstNameTitleLable.leadingAnchor.constraint(equalTo: passwordCheckTextView.leadingAnchor),
             firstNameTitleLable.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -10),
-            firstNameTitleLable.topAnchor.constraint(equalTo: passwordCheckTextView.bottomAnchor, constant: 5),
-            firstNameTitleLable.heightAnchor.constraint(equalToConstant: 50),
+            firstNameTitleLable.topAnchor.constraint(equalTo: passwordCheckTextView.bottomAnchor),
+            firstNameTitleLable.heightAnchor.constraint(equalToConstant: 40),
             
-            firstNameTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            firstNameTextView.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -10),
-            firstNameTextView.topAnchor.constraint(equalTo: firstNameTitleLable.bottomAnchor, constant: 5),
-            firstNameTextView.heightAnchor.constraint(equalToConstant: 50),
+            firstNameTextView.leadingAnchor.constraint(equalTo: passwordCheckTextView.leadingAnchor),
+            firstNameTextView.trailingAnchor.constraint(equalTo: passwordCheckTextView.centerXAnchor, constant: -10),
+            firstNameTextView.topAnchor.constraint(equalTo: firstNameTitleLable.bottomAnchor, constant: 1),
+            firstNameTextView.heightAnchor.constraint(equalToConstant: 40),
             
-            lastNameTitleLable.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 10),
+            lastNameTitleLable.leadingAnchor.constraint(equalTo: passwordCheckTextView.centerXAnchor, constant: 10),
             lastNameTitleLable.trailingAnchor.constraint(equalTo: passwordCheckTextView.trailingAnchor),
             lastNameTitleLable.topAnchor.constraint(equalTo: firstNameTitleLable.topAnchor),
-            lastNameTitleLable.heightAnchor.constraint(equalToConstant: 50),
+            lastNameTitleLable.heightAnchor.constraint(equalToConstant: 40),
             
-            lastNameTextView.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 10),
-            lastNameTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            lastNameTextView.leadingAnchor.constraint(equalTo: passwordCheckTextView.centerXAnchor, constant: 10),
+            lastNameTextView.trailingAnchor.constraint(equalTo: passwordCheckTextView.trailingAnchor),
             lastNameTextView.topAnchor.constraint(equalTo: firstNameTextView.topAnchor),
-            lastNameTextView.heightAnchor.constraint(equalToConstant: 50),
+            lastNameTextView.heightAnchor.constraint(equalToConstant: 40),
+            
+            genderTitleLable.leadingAnchor.constraint(equalTo: firstNameTitleLable.leadingAnchor),
+            genderTitleLable.trailingAnchor.constraint(equalTo: firstNameTitleLable.trailingAnchor),
+            genderTitleLable.topAnchor.constraint(equalTo: firstNameTextView.bottomAnchor, constant: 1),
+            genderTitleLable.heightAnchor.constraint(equalToConstant: 40),
+            
+            genderTextView.leadingAnchor.constraint(equalTo: genderTitleLable.leadingAnchor),
+            genderTextView.trailingAnchor.constraint(equalTo: genderTitleLable.trailingAnchor),
+            genderTextView.topAnchor.constraint(equalTo: genderTitleLable.bottomAnchor, constant: 1),
+            genderTextView.heightAnchor.constraint(equalToConstant: 35),
+            
+            birthdayTitleLable.leadingAnchor.constraint(equalTo: lastNameTitleLable.leadingAnchor),
+            birthdayTitleLable.trailingAnchor.constraint(equalTo: lastNameTitleLable.trailingAnchor),
+            birthdayTitleLable.topAnchor.constraint(equalTo: genderTitleLable.topAnchor),
+            birthdayTitleLable.heightAnchor.constraint(equalToConstant: 40),
+            
+            birthdayTextView.leadingAnchor.constraint(equalTo: lastNameTextView.leadingAnchor),
+            birthdayTextView.trailingAnchor.constraint(equalTo: lastNameTextView.trailingAnchor),
+            birthdayTextView.topAnchor.constraint(equalTo: genderTextView.topAnchor),
+            birthdayTextView.heightAnchor.constraint(equalToConstant: 35),
             
             confirmButton.leadingAnchor.constraint(equalTo: firstNameTextView.centerXAnchor),
             confirmButton.trailingAnchor.constraint(equalTo: lastNameTextView.centerXAnchor),
-            confirmButton.topAnchor.constraint(equalTo: firstNameTextView.bottomAnchor, constant: 20),
+            confirmButton.topAnchor.constraint(equalTo: genderTextView.bottomAnchor, constant: 20),
             confirmButton.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
 
 }
+
+
 // MARK: - Extension
+extension RegisterViewController: UIPickerViewDelegate, UIPickerViewDataSource {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return genderData.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return genderData[row]
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        genderTextView.text = genderData[row]
+        viewModel.genderText = genderTextView.text
+        viewModel.checkAuthText()
+    }
+}
