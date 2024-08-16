@@ -1,5 +1,5 @@
 //
-//  PortfolioViewController.swift
+//  InventoryViewController.swift
 //  NomikStockTW
 //
 //  Created by Pinocchio on 2024/7/3.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PortfolioViewController: UIViewController {
+class InventoryViewController: UIViewController {
     // MARK: - Variables
     // MARK: - UI Components
     // MARK: - Lifecycle
