@@ -33,7 +33,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         homeTableView.dataSource = self
         homeTableView.delegate = self
         
-        let homeHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0,width: view.bounds.width, height: 240))
+        let homeHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 240))
         homeHeaderView.delegate = self
         homeTableView.tableHeaderView = homeHeaderView
         
@@ -73,17 +73,14 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate, Collec
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    //返回section的數量
     func numberOfSections(in tableView: UITableView) -> Int {
         return homeTitleName.count
     }
     
-    //返回指定section中的row行數量
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 1
     }
     
-    //設定Row的高度
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
         case 0:
@@ -93,7 +90,6 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate, Collec
         }
     }
     
-    //返回指定位置的cell
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         switch indexPath.section {

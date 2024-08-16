@@ -17,22 +17,19 @@ class TabbarViewController: UITabBarController {
         UITabBarItem.appearance().setTitleTextAttributes([.foregroundColor: UIColor.clear], for: .selected)
 
         let vc1 = HomeViewController()
-        let vc2 = PortfolioViewController()
-        let vc3 = FastOrderViewController()
-        let vc4 = HistoryViewController()
+        let vc2 = FastOrderViewController()
+        let vc3 = InventoryViewController()
         
         vc1.tabBarItem.image = UIImage(systemName: "house")
-        vc2.tabBarItem.image = UIImage(systemName: "tray.and.arrow.down")
-        vc3.tabBarItem.image = UIImage(systemName: "arrow.down.left.arrow.up.right")
-        vc4.tabBarItem.image = UIImage(systemName: "menucard")
+        vc2.tabBarItem.image = UIImage(systemName: "arrow.down.left.arrow.up.right")
+        vc3.tabBarItem.image = UIImage(systemName: "tray.and.arrow.down")
         
         let nav1 = UINavigationController(rootViewController: vc1)
         let nav2 = UINavigationController(rootViewController: vc2)
         let nav3 = UINavigationController(rootViewController: vc3)
-        let nav4 = UINavigationController(rootViewController: vc4)
         
         
-        setViewControllers([nav1, nav2, nav3, nav4], animated: true)
+        setViewControllers([nav1, nav2, nav3], animated: true)
     }
     
     override func viewWillAppear(_ animated: Bool) {
