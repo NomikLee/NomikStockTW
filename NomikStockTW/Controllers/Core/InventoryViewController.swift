@@ -6,10 +6,13 @@
 //
 
 import UIKit
+import Combine
 
 class InventoryViewController: UIViewController {
     
     // MARK: - Variables
+    private let viewModel = FirestoreViewModels()
+    private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
     private let titleView: UIView = {
@@ -95,6 +98,8 @@ class InventoryViewController: UIViewController {
         inventoryCollectionView.dataSource = self
         
         configureUI()
+        bindView()
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -103,6 +108,15 @@ class InventoryViewController: UIViewController {
     }
     
     // MARK: - Functions
+    private func bindView(){
+        viewModel.fetchFirestoreMainData()
+        viewModel.$mainDatas.receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.inventoryCollectionView.reloadData()
+            }
+            .store(in: &cancellables)
+    }
+    
     // MARK: - Selectors
     
     // MARK: - UI Setup
@@ -111,7 +125,7 @@ class InventoryViewController: UIViewController {
             titleView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             titleView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             titleView.bottomAnchor.constraint(equalTo: totelView.topAnchor),
-            titleView.widthAnchor.constraint(equalToConstant: view.bounds.width/5),
+            titleView.widthAnchor.constraint(equalToConstant: view.bounds.width/5.2),
             
             titleNameLabel.topAnchor.constraint(equalTo: titleView.topAnchor, constant: 30),
             titleNameLabel.leadingAnchor.constraint(equalTo: titleView.leadingAnchor),
@@ -138,9 +152,6 @@ class InventoryViewController: UIViewController {
             titleProfitLossLabel.trailingAnchor.constraint(equalTo: titleCostLabel.trailingAnchor),
             titleProfitLossLabel.heightAnchor.constraint(equalToConstant: 50),
             
-            
-            
-            
             totelView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             totelView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             totelView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -152,12 +163,24 @@ class InventoryViewController: UIViewController {
 // MARK: - Extension
 extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        return (viewModel.mainDatas?.treasury.count ?? 0) + 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: InventoryCollectionViewCell.identifier, for: indexPath)
-        cell.backgroundColor = .blue
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: InventoryCollectionViewCell.identifier, for: indexPath) as? InventoryCollectionViewCell else {
+                return UICollectionViewCell()
+        }
+        
+        let dataArray = viewModel.mainDatas?.treasury["\(indexPath.row)"]
+        
+        switch indexPath.row {
+        case 0:
+            cell.backgroundColor = .systemBackground
+            cell.configureInventoryData(with: "", stockName: "", stockNum: "", stockCost: "", StockProfitLoss: "")
+        default:
+            cell.backgroundColor = .secondaryLabel
+            cell.configureInventoryData(with: dataArray?[0] ?? "", stockName: dataArray?[1] ?? "", stockNum: dataArray?[2] ?? "", stockCost: dataArray?[3] ?? "", StockProfitLoss: dataArray?[4] ?? "")
+        }
         return cell
     }
 }
@@ -170,9 +193,9 @@ extension InventoryViewController: UICollectionViewDelegateFlowLayout {
         
         switch indexPath.row {
         case 0:
-            return CGSize(width: collectionView.frame.width/5, height: availableHeight)
+            return CGSize(width: collectionView.frame.width/5.2, height: availableHeight)
         default:
-            return CGSize(width: collectionView.frame.width/2, height: availableHeight)
+            return CGSize(width: collectionView.frame.width/2.5, height: availableHeight)
         }
     }
 }

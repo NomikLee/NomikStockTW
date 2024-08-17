@@ -28,19 +28,4 @@ class FirestoreManager {
         }
         .eraseToAnyPublisher()
     }
-    
-    func getSubCollection(from userId: String, collectionName: String) -> AnyPublisher<[QueryDocumentSnapshot], Error> {
-        return Future { promise in
-            self.db.collection("users").document(userId).collection(collectionName).getDocuments { querySnapshot, error in
-                if let error = error {
-                    promise(.failure(error))
-                }else {
-                    if let documents = querySnapshot?.documents {
-                        promise(.success(documents))
-                    }
-                }
-            }
-        }
-        .eraseToAnyPublisher()
-    }
 }

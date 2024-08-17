@@ -125,8 +125,10 @@ class HomeHeaderVIew: UIView {
     // MARK: - Functions
     private func bindView() {
         viewModel.fetchFirestoreMainData()
-        viewModel.$mainDatas.sink { [weak self] data in
-            self?.totalBalanceLabel.text = "\(data["moneny"] ?? 0)"
+        viewModel.$mainDatas.receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+            guard let data = data else { return }
+            self?.totalBalanceLabel.text = data.money
         }
         .store(in: &cancellables)
     }

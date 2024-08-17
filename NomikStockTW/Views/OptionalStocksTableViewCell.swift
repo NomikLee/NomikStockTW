@@ -54,15 +54,15 @@ class OptionalStocksTableViewCell: UITableViewCell {
     
     // MARK: - Functions
     private func bindView(){
-        firestoreViewModel.fetchFavoritesCollection()
-        firestoreViewModel.$favoritesDatas
-            .receive(on: DispatchQueue.main)
+        firestoreViewModel.fetchFirestoreMainData()
+        firestoreViewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] data in
-                self?.stockList = data.flatMap { $0.keys }
-                self?.fetchFavoritesStockData()
-                self?.collectionView.reloadData()
-            }
-            .store(in: &cancellables)
+            guard let data = data else { return }
+            self?.stockList = data.favorites.map { $0 }
+            self?.fetchFavoritesStockData()
+            self?.collectionView.reloadData()
+        }
+        .store(in: &cancellables)
     }
     
     private func fetchFavoritesStockData() {

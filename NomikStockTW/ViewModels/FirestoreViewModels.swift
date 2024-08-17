@@ -11,9 +11,8 @@ import FirebaseFirestore
 import Combine
 
 class FirestoreViewModels: ObservableObject {
-    @Published var mainDatas: [String: Any] = [:]
-    @Published var favoritesDatas: [[String: Any]] = []
     
+    @Published var mainDatas: UserProfileModels?
     private var cancellables = Set<AnyCancellable>()
         
     func fetchFirestoreMainData() {
@@ -28,27 +27,17 @@ class FirestoreViewModels: ObservableObject {
                     print(error.localizedDescription)
                 }
             } receiveValue: { [weak self] document in
-                if let mainData = document?.data() {
-                    self?.mainDatas = mainData
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
-    func fetchFavoritesCollection() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        FirestoreManager.shared.getSubCollection(from: uid, collectionName: "favorites")
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    print(error.localizedDescription)
-                }
-            } receiveValue: { [weak self] documents in
-                let favoritesData = documents.map { $0.data() }
-                self?.favoritesDatas = favoritesData
+                guard let data = document?.data() else { return }
+                self?.mainDatas = UserProfileModels(
+                    uid: data["uid"] as? String ?? "",
+                    gender: data["gender"] as? String ?? "",
+                    birthday: data["birthday"] as? String ?? "",
+                    firstName: data["firstName"] as? String ?? "",
+                    lastName: data["lastName"] as? String ?? "",
+                    money: data["money"] as? String ?? "",
+                    favorites: data["favorites"] as? [String] ?? [],
+                    treasury: data["treasury"] as? [String: [String]] ?? [:]
+                )
             }
             .store(in: &cancellables)
     }

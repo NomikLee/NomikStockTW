@@ -24,35 +24,20 @@ class AuthManager {
     
     func userInfoSave(uid: String, gender: String, birthday: String, firstName: String, lastName: String) {
         let db = Firestore.firestore()
+        let treasuryData: [String: [String]] = [
+                "1": ["2330", "台積電", "5600", "30000", "+3232"]
+            ]
         
-        var userMainInfo = db.collection("users").document(uid)
-        userMainInfo.setData(["uid" : uid, "gender" : gender, "birthday" : birthday, "firstName" : firstName, "lastName" : lastName, "moneny": 1500000]) { error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-        }
-        
-        var userFavoriteInfo = userMainInfo.collection("favorites").document()
-        userFavoriteInfo.setData([
-            "00631L": "正2"
-        ]) { error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-        }
-        
-        var userTreasuryInfo = userMainInfo.collection("treasury").document()
-        userTreasuryInfo.setData([
-            "00631L" : 1
-        ]) { error in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-        }
-        
-        var userTradingRecordInfo = userMainInfo.collection("tradingRecord").document()
-        userTradingRecordInfo.setData([
-            "00631L" : [1, 220]
+        let userMainInfo = db.collection("users").document(uid)
+        userMainInfo.setData([
+            "uid" : uid,
+            "gender" : gender,
+            "birthday" : birthday,
+            "firstName" : firstName,
+            "lastName" : lastName,
+            "moneny": 1500000,
+            "favorites" : ["0050"],
+            "treasury" : treasuryData
         ]) { error in
             if let error = error {
                 print(error.localizedDescription)
