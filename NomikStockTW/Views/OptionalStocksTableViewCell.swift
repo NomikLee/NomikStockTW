@@ -41,6 +41,8 @@ class OptionalStocksTableViewCell: UITableViewCell {
         collectionView.dataSource = self
         
         bindView()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification), name: .changeOptionalList, object: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -79,7 +81,16 @@ class OptionalStocksTableViewCell: UITableViewCell {
             }
             .store(in: &cancellables)
     }
+    
     // MARK: - Selectors
+    @objc private func handleNotification() {
+        bindView()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     // MARK: - UI Setup
 }
 
@@ -103,4 +114,15 @@ extension OptionalStocksTableViewCell: UICollectionViewDelegate, UICollectionVie
         }
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as? OptionalStocksCollectionViewCell
+        if let title = cell?.stockTitleNumLabel.text {
+            NotificationCenter.default.post(name: .didReceiveMessage, object: "\(title)")
+        }
+    }
+}
+
+extension Notification.Name {
+    static let didReceiveMessage = Notification.Name("didReceiveMessage")
 }

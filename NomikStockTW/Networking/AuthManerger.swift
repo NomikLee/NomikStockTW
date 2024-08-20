@@ -35,8 +35,8 @@ class AuthManager {
             "birthday" : birthday,
             "firstName" : firstName,
             "lastName" : lastName,
-            "moneny": 1500000,
-            "favorites" : ["0050"],
+            "money": "66600000",
+            "favorites" : ["2330"],
             "treasury" : treasuryData
         ]) { error in
             if let error = error {

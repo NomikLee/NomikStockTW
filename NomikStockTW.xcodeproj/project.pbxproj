@@ -328,8 +328,8 @@
 			children = (
 				6F562D8B2C34DE610083ACE3 /* TabbarViewController.swift */,
 				6F562D502C34D9870083ACE3 /* HomeViewController.swift */,
-				6F562D8D2C34DF080083ACE3 /* InventoryViewController.swift */,
 				6F1A8B792C43829E002F4F18 /* FastOrderViewController.swift */,
+				6F562D8D2C34DF080083ACE3 /* InventoryViewController.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";

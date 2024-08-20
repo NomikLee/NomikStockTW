@@ -37,6 +37,8 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         homeHeaderView.delegate = self
         homeTableView.tableHeaderView = homeHeaderView
         
+        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: .didReceiveMessage, object: nil)
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -61,6 +63,18 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }
     
     // MARK: - Selectors
+    @objc private func handleNotification(_ notification: Notification) {
+        if let stockCode = notification.object as? String {
+            let vc = FastOrderViewController()
+            vc.title = stockCode
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     // MARK: - UI Setup
 
 }

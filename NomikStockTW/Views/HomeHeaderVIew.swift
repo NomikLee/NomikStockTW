@@ -129,6 +129,7 @@ class HomeHeaderVIew: UIView {
             .sink { [weak self] data in
             guard let data = data else { return }
             self?.totalBalanceLabel.text = data.money
+            self?.nameHeaderLabel.text = "Hi \(data.lastName)"
         }
         .store(in: &cancellables)
     }

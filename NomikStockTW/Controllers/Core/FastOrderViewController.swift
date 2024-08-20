@@ -8,10 +8,12 @@
 import UIKit
 import DGCharts
 import Combine
+import Firebase
 
 class FastOrderViewController: UIViewController {
     
     // MARK: - Variables
+    private let db = Firestore.firestore()
     private let viewModel = StockFetchDatasViewModels()
     private var cancellables = Set<AnyCancellable>()
     
@@ -236,6 +238,15 @@ class FastOrderViewController: UIViewController {
         return stackView
     }()
     
+    private let addFavoriteButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "heart"), for: .normal)
+        button.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+        button.tintColor = .systemRed
+        return button
+    }()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -262,6 +273,7 @@ class FastOrderViewController: UIViewController {
         fastOrderValueView.addSubview(fastOrderOTDCPriceStackView)
         fastOrderValueView.addSubview(fastOrderAVVNameStackView)
         fastOrderValueView.addSubview(fastOrderAVVDataStackView)
+        fastOrderValueView.addSubview(addFavoriteButton)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus.circle"), style: .plain, target: self, action: #selector(didAddTradeStock))
         
@@ -276,6 +288,20 @@ class FastOrderViewController: UIViewController {
     private func binView(){
         
         guard let currentTitle = self.title else { return }
+        
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        db.collection("users").document(userId).getDocument { document, error in
+            guard let document = document, document.exists, let favorites = document.get("favorites") as? [String] else {
+                return
+            }
+            
+            if favorites.contains(currentTitle) {
+                self.addFavoriteButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
+            }else {
+                self.addFavoriteButton.setImage(UIImage(systemName: "heart"), for: .normal)
+            }
+        }
+        
         viewModel.intradayQuoteFetchDatas(with: currentTitle)
         viewModel.$intradayQuoteDatas.sink { [weak self] quoteData in
             self?.fastOrderNameLabel.text = "\(quoteData?.name ?? "---")"
@@ -397,7 +423,11 @@ class FastOrderViewController: UIViewController {
                 
         let okAction = UIAlertAction(title: "確定", style: .default) { _ in
             if let text = alert.textFields?.first?.text {
-                self.title = text
+                if text == "" {
+                    self.title = "2330"
+                }else {
+                    self.title = text
+                }
                 self.binView()
             }
         }
@@ -415,24 +445,50 @@ class FastOrderViewController: UIViewController {
         
         present(halfVC, animated: true, completion: nil)
     }
+    
     private func setTapButton(){
         fastOrderLeadingUpListButton.addTarget(self, action: #selector(didTapBuy), for: .touchUpInside)
         fastOrderTrailingDownListButton.addTarget(self, action: #selector(didTapSell), for: .touchUpInside)
         fastOrderUpListButton.addTarget(self, action: #selector(didTapBuy), for: .touchUpInside)
         fastOrderDownListButton.addTarget(self, action: #selector(didTapSell), for: .touchUpInside)
+        addFavoriteButton.addTarget(self, action: #selector(tapAddFavorite), for: .touchUpInside)
     }
     
     // MARK: - Selectors
-    @objc private func didTapBuy(){
+    @objc private func didTapBuy() {
         showBuySellHalf("BUY")
     }
     
-    @objc private func didTapSell(){
+    @objc private func didTapSell() {
         showBuySellHalf("SELL")
     }
     
-    @objc private func didAddTradeStock(){
+    @objc private func didAddTradeStock() {
         setAlert()
+    }
+    
+    @objc private func tapAddFavorite() {
+        addFavoriteButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
+        addFavoriteButton.addTarget(self, action: #selector(tapDelFavorite), for: .touchUpInside)
+        
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        db.collection("users").document(userId).updateData([
+            "favorites": FieldValue.arrayUnion([self.title])
+        ])
+        
+        NotificationCenter.default.post(name: .changeOptionalList, object: nil)
+    }
+    
+    @objc private func tapDelFavorite() {
+        addFavoriteButton.setImage(UIImage(systemName: "heart"), for: .normal)
+        addFavoriteButton.addTarget(self, action: #selector(tapAddFavorite), for: .touchUpInside)
+        
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        db.collection("users").document(userId).updateData([
+            "favorites": FieldValue.arrayRemove([self.title])
+        ])
+        
+        NotificationCenter.default.post(name: .changeOptionalList, object: nil)
     }
     
     // MARK: - UI Setup
@@ -521,9 +577,17 @@ class FastOrderViewController: UIViewController {
             fastOrderAVVDataStackView.topAnchor.constraint(equalTo: fastOrderAVVNameStackView.bottomAnchor, constant: 10),
             fastOrderAVVDataStackView.leadingAnchor.constraint(equalTo: fastOrderAVVNameStackView.leadingAnchor),
             fastOrderAVVDataStackView.trailingAnchor.constraint(equalTo: fastOrderAVVNameStackView.trailingAnchor),
+            
+            addFavoriteButton.topAnchor.constraint(equalTo: fastOrderAVVDataStackView.bottomAnchor, constant: 10),
+            addFavoriteButton.trailingAnchor.constraint(equalTo: fastOrderValueView.trailingAnchor, constant: -10),
+            addFavoriteButton.widthAnchor.constraint(equalToConstant: 50),
+            addFavoriteButton.bottomAnchor.constraint(equalTo: fastOrderValueView.bottomAnchor, constant: -10)
         ])
         
     }
 }
 
 // MARK: - Extension
+extension Notification.Name {
+    static let changeOptionalList = Notification.Name("changeOptionalList")
+}

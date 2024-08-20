@@ -15,17 +15,19 @@ class InventoryViewController: UIViewController {
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
+    private let inventoryCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.register(InventoryCollectionViewCell.self, forCellWithReuseIdentifier: InventoryCollectionViewCell.identifier)
+        return collectionView
+    }()
+    
     private let titleView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints  = false
         view.backgroundColor = .systemRed
-        return view
-    }()
-    
-    private let totelView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints  = false
-        view.backgroundColor = .systemTeal
         return view
     }()
     
@@ -40,7 +42,7 @@ class InventoryViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "股名"
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.font = .systemFont(ofSize: 25, weight: .bold)
         label.textAlignment = .center
         return label
     }()
@@ -49,7 +51,7 @@ class InventoryViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "庫存數"
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.font = .systemFont(ofSize: 25, weight: .bold)
         label.textAlignment = .center
         return label
     }()
@@ -58,7 +60,7 @@ class InventoryViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "成本"
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.font = .systemFont(ofSize: 25, weight: .bold)
         label.textAlignment = .center
         return label
     }()
@@ -67,18 +69,64 @@ class InventoryViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "賺賠"
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.font = .systemFont(ofSize: 25, weight: .bold)
         label.textAlignment = .center
         return label
     }()
     
-    private let inventoryCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.register(InventoryCollectionViewCell.self, forCellWithReuseIdentifier: InventoryCollectionViewCell.identifier)
-        return collectionView
+    private let totelView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints  = false
+        view.backgroundColor = .systemBackground
+        view.layer.cornerRadius = 10
+        view.layer.borderWidth = 7
+        view.layer.borderColor = UIColor.systemOrange.cgColor
+        return view
+    }()
+    
+    private let totelTitle: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "總共資金: "
+        label.textColor = .systemBlue
+        return label
+    }()
+    
+    private let totelLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "66600000 元"
+        return label
+    }()
+    
+    private let stockValueTitle: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "股票價值: "
+        label.textColor = .systemBlue
+        return label
+    }()
+    
+    private let stockValueLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "6610000 元"
+        return label
+    }()
+    
+    private let availableTitle: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "剩餘資金: "
+        label.textColor = .systemBlue
+        return label
+    }()
+    
+    private let availableFundsLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "500000 元"
+        return label
     }()
     
     // MARK: - Lifecycle
@@ -93,6 +141,12 @@ class InventoryViewController: UIViewController {
         titleView.addSubview(titleStockNumLabel)
         titleView.addSubview(titleCostLabel)
         titleView.addSubview(titleProfitLossLabel)
+        totelView.addSubview(totelTitle)
+        totelView.addSubview(totelLabel)
+        totelView.addSubview(stockValueTitle)
+        totelView.addSubview(stockValueLabel)
+        totelView.addSubview(availableTitle)
+        totelView.addSubview(availableFundsLabel)
         
         inventoryCollectionView.delegate = self
         inventoryCollectionView.dataSource = self
@@ -155,7 +209,38 @@ class InventoryViewController: UIViewController {
             totelView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             totelView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             totelView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            totelView.heightAnchor.constraint(equalToConstant: 150)
+            totelView.heightAnchor.constraint(equalToConstant: 150),
+            
+            totelTitle.leadingAnchor.constraint(equalTo: totelView.leadingAnchor, constant: 40),
+            totelTitle.topAnchor.constraint(equalTo: totelView.topAnchor, constant: 25),
+            totelTitle.widthAnchor.constraint(equalToConstant: 100),
+            totelTitle.heightAnchor.constraint(equalToConstant: 15),
+            
+            totelLabel.leadingAnchor.constraint(equalTo: totelTitle.trailingAnchor),
+            totelLabel.topAnchor.constraint(equalTo: totelTitle.topAnchor),
+            totelLabel.trailingAnchor.constraint(equalTo: totelView.trailingAnchor),
+            totelLabel.heightAnchor.constraint(equalToConstant: 15),
+            
+            stockValueTitle.leadingAnchor.constraint(equalTo: totelTitle.leadingAnchor),
+            stockValueTitle.topAnchor.constraint(equalTo: totelTitle.bottomAnchor, constant: 25),
+            stockValueTitle.widthAnchor.constraint(equalToConstant: 100),
+            stockValueTitle.heightAnchor.constraint(equalToConstant: 15),
+            
+            stockValueLabel.leadingAnchor.constraint(equalTo: stockValueTitle.trailingAnchor),
+            stockValueLabel.topAnchor.constraint(equalTo: stockValueTitle.topAnchor),
+            stockValueLabel.trailingAnchor.constraint(equalTo: totelView.trailingAnchor),
+            stockValueLabel.heightAnchor.constraint(equalToConstant: 15),
+            
+            availableTitle.leadingAnchor.constraint(equalTo: stockValueTitle.leadingAnchor),
+            availableTitle.topAnchor.constraint(equalTo: stockValueTitle.bottomAnchor, constant: 25),
+            availableTitle.widthAnchor.constraint(equalToConstant: 100),
+            availableTitle.heightAnchor.constraint(equalToConstant: 15),
+            
+            availableFundsLabel.leadingAnchor.constraint(equalTo: availableTitle.trailingAnchor),
+            availableFundsLabel.topAnchor.constraint(equalTo: availableTitle.topAnchor),
+            availableFundsLabel.trailingAnchor.constraint(equalTo: totelView.trailingAnchor),
+            availableFundsLabel.heightAnchor.constraint(equalToConstant: 15),
+            
         ])
     }
 }

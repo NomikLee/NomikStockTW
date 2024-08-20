@@ -23,7 +23,7 @@ class OptionalStocksCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let stockTitleNumLabel: UILabel = {
+    let stockTitleNumLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .secondaryLabel
