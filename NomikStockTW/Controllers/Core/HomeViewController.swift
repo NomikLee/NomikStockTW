@@ -71,10 +71,6 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         }
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
     // MARK: - UI Setup
 
 }

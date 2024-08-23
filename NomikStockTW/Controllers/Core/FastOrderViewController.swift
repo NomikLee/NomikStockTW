@@ -435,8 +435,8 @@ class FastOrderViewController: UIViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    private func showBuySellHalf(_ buyAndSell: String){
-        let halfVC = buySellHalfViewController(title: buyAndSell)
+    private func showBuySellHalf(_ buyAndSell: String, buyAndSellSymbol: String){
+        let halfVC = buySellHalfViewController(title: buyAndSell, Symbol: buyAndSellSymbol)
         
         if let sheet = halfVC.sheetPresentationController {
             sheet.detents = [.medium()]
@@ -456,11 +456,11 @@ class FastOrderViewController: UIViewController {
     
     // MARK: - Selectors
     @objc private func didTapBuy() {
-        showBuySellHalf("BUY")
+        showBuySellHalf("BUY", buyAndSellSymbol: self.title ?? "2330")
     }
     
     @objc private func didTapSell() {
-        showBuySellHalf("SELL")
+        showBuySellHalf("SELL", buyAndSellSymbol: self.title ?? "2330")
     }
     
     @objc private func didAddTradeStock() {
