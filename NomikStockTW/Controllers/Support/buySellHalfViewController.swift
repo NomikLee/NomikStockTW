@@ -81,7 +81,7 @@ class buySellHalfViewController: UIViewController {
         let stepper = UIStepper()
         stepper.translatesAutoresizingMaskIntoConstraints = false
         stepper.stepValue = 1
-        stepper.maximumValue = 999999
+        stepper.maximumValue = 499000
         stepper.value = 0
         return stepper
     }()

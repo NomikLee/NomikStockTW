@@ -128,7 +128,8 @@ class HomeHeaderVIew: UIView {
         viewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] data in
             guard let data = data else { return }
-            self?.totalBalanceLabel.text = data.money
+                var totelBalance = 0
+                self?.totalBalanceLabel.text = "\(totelBalance)"
             self?.nameHeaderLabel.text = "Hi \(data.lastName)"
         }
         .store(in: &cancellables)

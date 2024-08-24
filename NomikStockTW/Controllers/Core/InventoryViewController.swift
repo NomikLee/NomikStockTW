@@ -11,7 +11,9 @@ import Combine
 class InventoryViewController: UIViewController {
     
     // MARK: - Variables
+    var addData: [Double] = []
     private let viewModel = FirestoreViewModels()
+    private let viewModelStockFetch = StockFetchDatasViewModels()
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
@@ -95,7 +97,7 @@ class InventoryViewController: UIViewController {
     private let totelLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "66600000 元"
+        label.text = "2000950 元"
         return label
     }()
     
@@ -110,7 +112,7 @@ class InventoryViewController: UIViewController {
     private let stockValueLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "6610000 元"
+        label.text = "180950 元"
         return label
     }()
     
@@ -125,7 +127,7 @@ class InventoryViewController: UIViewController {
     private let availableFundsLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "500000 元"
+        label.text = "1820000 元"
         return label
     }()
     
@@ -169,9 +171,18 @@ class InventoryViewController: UIViewController {
                 self?.inventoryCollectionView.reloadData()
             }
             .store(in: &cancellables)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: .didStockData, object: nil)
     }
     
     // MARK: - Selectors
+    @objc private func handleNotification(_ notification: Notification){
+        if let data = notification.object as? Double {
+            addData.append(data)
+        }
+        let sum = addData.reduce(0.0, +)
+        self.stockValueLabel.text = "\(sum) 元"
+    }
     
     // MARK: - UI Setup
     private func configureUI(){
@@ -253,18 +264,30 @@ extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDat
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: InventoryCollectionViewCell.identifier, for: indexPath) as? InventoryCollectionViewCell else {
-                return UICollectionViewCell()
+            return UICollectionViewCell()
         }
-        
-        let dataArray = viewModel.mainDatas?.treasury["\(indexPath.row)"]
         
         switch indexPath.row {
         case 0:
             cell.backgroundColor = .systemBackground
             cell.configureInventoryData(with: "", stockName: "", stockNum: "", stockCost: "", StockProfitLoss: "")
         default:
-            cell.backgroundColor = .secondaryLabel
-            cell.configureInventoryData(with: dataArray?[0] ?? "", stockName: dataArray?[1] ?? "", stockNum: dataArray?[2] ?? "", stockCost: dataArray?[3] ?? "", StockProfitLoss: dataArray?[4] ?? "")
+            var dataArray = viewModel.mainDatas?.treasury["\(indexPath.row)"]
+            
+            viewModelStockFetch.inventoryIntradayQuoteFetchDatas(with: dataArray?[0] ?? "")
+            viewModelStockFetch.$inventoryIntradayQuoteDatas
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] data in
+                    if let data = data {
+                        if data.symbol == dataArray?[0] {
+                            let stockProfitLoss = data.closePrice * (Double(dataArray?[2] ?? "") ?? 0.0)
+                            NotificationCenter.default.post(name: .didStockData, object: stockProfitLoss)
+                            cell.backgroundColor = .secondaryLabel
+                            cell.configureInventoryData(with: dataArray?[0] ?? "", stockName: dataArray?[1] ?? "", stockNum: dataArray?[2] ?? "", stockCost: dataArray?[3] ?? "", StockProfitLoss: "\(stockProfitLoss)")
+                        }
+                    }
+                }
+                .store(in: &cancellables)
         }
         return cell
     }
@@ -283,4 +306,8 @@ extension InventoryViewController: UICollectionViewDelegateFlowLayout {
             return CGSize(width: collectionView.frame.width/2.5, height: availableHeight)
         }
     }
+}
+
+extension Notification.Name {
+    static let didStockData = Notification.Name("didStockData")
 }

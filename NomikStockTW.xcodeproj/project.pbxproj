@@ -40,6 +40,7 @@
 		6FABEC6B2C671EB3008AED55 /* ReloadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FABEC6A2C671EB3008AED55 /* ReloadViewController.swift */; };
 		6FABEC6D2C672F01008AED55 /* UserSettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FABEC6C2C672F01008AED55 /* UserSettingViewController.swift */; };
 		6FBCE61D2C70676000F54F84 /* UserProfileModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FBCE61C2C70676000F54F84 /* UserProfileModels.swift */; };
+		6FBCE61F2C798A7E00F54F84 /* InventoryViewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FBCE61E2C798A7E00F54F84 /* InventoryViewModels.swift */; };
 		6FC72BC52C4CE729008AD7C4 /* AuthViewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC72BC42C4CE729008AD7C4 /* AuthViewModels.swift */; };
 		6FEB37FD2C3E7DE4007C03FE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6FEB37FC2C3E7DE4007C03FE /* GoogleService-Info.plist */; };
 		6FEB38002C3E7E7B007C03FE /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 6FEB37FF2C3E7E7B007C03FE /* FirebaseAnalytics */; };
@@ -142,6 +143,7 @@
 		6FABEC6A2C671EB3008AED55 /* ReloadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReloadViewController.swift; sourceTree = "<group>"; };
 		6FABEC6C2C672F01008AED55 /* UserSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettingViewController.swift; sourceTree = "<group>"; };
 		6FBCE61C2C70676000F54F84 /* UserProfileModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileModels.swift; sourceTree = "<group>"; };
+		6FBCE61E2C798A7E00F54F84 /* InventoryViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryViewModels.swift; sourceTree = "<group>"; };
 		6FC72BC42C4CE729008AD7C4 /* AuthViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModels.swift; sourceTree = "<group>"; };
 		6FEB37FC2C3E7DE4007C03FE /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6FFEDBF22C4662F30061669E /* IntradayQuoteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntradayQuoteModels.swift; sourceTree = "<group>"; };
@@ -308,6 +310,7 @@
 				6F9ACA062C39134300283242 /* StockFetchDatasViewModels.swift */,
 				6FC72BC42C4CE729008AD7C4 /* AuthViewModels.swift */,
 				6F685CEA2C5CCD6D00C1D8EB /* FirestoreViewModels.swift */,
+				6FBCE61E2C798A7E00F54F84 /* InventoryViewModels.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -522,6 +525,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6F562D512C34D9870083ACE3 /* HomeViewController.swift in Sources */,
+				6FBCE61F2C798A7E00F54F84 /* InventoryViewModels.swift in Sources */,
 				6F562D4D2C34D9870083ACE3 /* AppDelegate.swift in Sources */,
 				6FFEDBF72C4A2DB10061669E /* buySellHalfViewController.swift in Sources */,
 				6F83AA742C4B7D1B00BDC660 /* RegisterViewController.swift in Sources */,
