@@ -79,6 +79,11 @@ class InventoryCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.isHidden = false
+    }
+    
     
     // MARK: - Functions
     public func configureInventoryData(with stock: String, stockName: String, stockNum: String, stockCost: String, StockProfitLoss: String) {

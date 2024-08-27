@@ -15,6 +15,7 @@ class FastOrderViewController: UIViewController {
     // MARK: - Variables
     private let db = Firestore.firestore()
     private let viewModel = StockFetchDatasViewModels()
+    private var changeOptionalList = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     
     
@@ -435,8 +436,8 @@ class FastOrderViewController: UIViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    private func showBuySellHalf(_ buyAndSell: String, buyAndSellSymbol: String){
-        let halfVC = buySellHalfViewController(title: buyAndSell, Symbol: buyAndSellSymbol)
+    private func showBuySellHalf(_ buyAndSell: String, buyAndSellName: String, buyAndSellPrice: String, buyAndSellSymbol: String){
+        let halfVC = buySellHalfViewController(title: buyAndSell, stockName: buyAndSellName, stockPrice: buyAndSellPrice , Symbol: buyAndSellSymbol)
         
         if let sheet = halfVC.sheetPresentationController {
             sheet.detents = [.medium()]
@@ -456,11 +457,11 @@ class FastOrderViewController: UIViewController {
     
     // MARK: - Selectors
     @objc private func didTapBuy() {
-        showBuySellHalf("BUY", buyAndSellSymbol: self.title ?? "2330")
+        showBuySellHalf("BUY", buyAndSellName: fastOrderNameLabel.text ?? "台積電", buyAndSellPrice: fastOrderPriceLabel.text ?? "0", buyAndSellSymbol: self.title ?? "2330")
     }
     
     @objc private func didTapSell() {
-        showBuySellHalf("SELL", buyAndSellSymbol: self.title ?? "2330")
+        showBuySellHalf("SELL", buyAndSellName: fastOrderNameLabel.text ?? "台積電", buyAndSellPrice: fastOrderPriceLabel.text ?? "0", buyAndSellSymbol: self.title ?? "2330")
     }
     
     @objc private func didAddTradeStock() {
@@ -476,7 +477,6 @@ class FastOrderViewController: UIViewController {
             "favorites": FieldValue.arrayUnion([self.title])
         ])
         
-        NotificationCenter.default.post(name: .changeOptionalList, object: nil)
     }
     
     @objc private func tapDelFavorite() {
@@ -488,7 +488,6 @@ class FastOrderViewController: UIViewController {
             "favorites": FieldValue.arrayRemove([self.title])
         ])
         
-        NotificationCenter.default.post(name: .changeOptionalList, object: nil)
     }
     
     // MARK: - UI Setup
@@ -588,6 +587,3 @@ class FastOrderViewController: UIViewController {
 }
 
 // MARK: - Extension
-extension Notification.Name {
-    static let changeOptionalList = Notification.Name("changeOptionalList")
-}

@@ -14,6 +14,7 @@ class InventoryViewController: UIViewController {
     var addData: [Double] = []
     private let viewModel = FirestoreViewModels()
     private let viewModelStockFetch = StockFetchDatasViewModels()
+    private var stockDataSubject = PassthroughSubject<Double, Never>()
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
@@ -153,9 +154,11 @@ class InventoryViewController: UIViewController {
         inventoryCollectionView.delegate = self
         inventoryCollectionView.dataSource = self
         
+        let rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.circlepath"), style: .plain, target: self, action: #selector(reroadTapped))
+        navigationItem.rightBarButtonItem = rightBarButtonItem
+        
         configureUI()
         bindView()
-        
     }
     
     override func viewDidLayoutSubviews() {
@@ -172,18 +175,27 @@ class InventoryViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: .didStockData, object: nil)
+        stockDataSubject.sink { [weak self] data in
+            self?.addData.append(data)
+            let sum = self?.addData.reduce(0.0, +)
+            self?.stockValueLabel.text = "\(sum!) 元"
+        }
+        .store(in: &cancellables)
     }
     
     // MARK: - Selectors
-    @objc private func handleNotification(_ notification: Notification){
-        if let data = notification.object as? Double {
-            addData.append(data)
-        }
-        let sum = addData.reduce(0.0, +)
-        self.stockValueLabel.text = "\(sum) 元"
+    @objc private func reroadTapped() {
+        cancellables.forEach { $0.cancel() }  // 清理現有的訂閱
+        cancellables.removeAll()
+        
+        viewModel.fetchFirestoreMainData()
+        viewModel.$mainDatas.receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.inventoryCollectionView.reloadData()
+            }
+            .store(in: &cancellables)
     }
-    
+
     // MARK: - UI Setup
     private func configureUI(){
         NSLayoutConstraint.activate([
@@ -267,11 +279,11 @@ extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDat
             return UICollectionViewCell()
         }
         
-        switch indexPath.row {
+        switch indexPath.item {
         case 0:
-            cell.backgroundColor = .systemBackground
-            cell.configureInventoryData(with: "", stockName: "", stockNum: "", stockCost: "", StockProfitLoss: "")
+            cell.isHidden = true
         default:
+            cell.isHidden = false
             var dataArray = viewModel.mainDatas?.treasury["\(indexPath.row)"]
             
             viewModelStockFetch.inventoryIntradayQuoteFetchDatas(with: dataArray?[0] ?? "")
@@ -281,7 +293,7 @@ extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDat
                     if let data = data {
                         if data.symbol == dataArray?[0] {
                             let stockProfitLoss = data.closePrice * (Double(dataArray?[2] ?? "") ?? 0.0)
-                            NotificationCenter.default.post(name: .didStockData, object: stockProfitLoss)
+                            self?.stockDataSubject.send(stockProfitLoss)
                             cell.backgroundColor = .secondaryLabel
                             cell.configureInventoryData(with: dataArray?[0] ?? "", stockName: dataArray?[1] ?? "", stockNum: dataArray?[2] ?? "", stockCost: dataArray?[3] ?? "", StockProfitLoss: "\(stockProfitLoss)")
                         }
@@ -306,8 +318,4 @@ extension InventoryViewController: UICollectionViewDelegateFlowLayout {
             return CGSize(width: collectionView.frame.width/2.5, height: availableHeight)
         }
     }
-}
-
-extension Notification.Name {
-    static let didStockData = Notification.Name("didStockData")
 }

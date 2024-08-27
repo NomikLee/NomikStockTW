@@ -41,4 +41,21 @@ class FirestoreViewModels: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    
+    func updateTreasuryData(with treasuryData: [String: [String]]) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        FirestoreManager.shared.updateMainDocument(from: uid, with: treasuryData)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            } receiveValue: { _ in
+                print("更新完成")
+            }
+            .store(in: &cancellables)
+    }
 }

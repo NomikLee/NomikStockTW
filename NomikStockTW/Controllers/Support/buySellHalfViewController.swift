@@ -11,6 +11,9 @@ class buySellHalfViewController: UIViewController {
     
     // MARK: - Variables
     private var symbol: String?
+    private var stockName: String?
+    private var stockPrice: String?
+    private let viewModel = FirestoreViewModels()
     
     // MARK: - UI Components
     private let buySellTitleContainer: UIView = {
@@ -97,10 +100,12 @@ class buySellHalfViewController: UIViewController {
     }()
     
     // MARK: - Lifecycle
-    init(title: String, Symbol: String) {
+    init(title: String, stockName: String, stockPrice: String, Symbol: String) {
         super.init(nibName: nil, bundle: nil)
         buySellTitle.text = title
         self.symbol = Symbol
+        self.stockName = stockName
+        self.stockPrice = stockPrice
     }
     
     required init?(coder: NSCoder) {
@@ -156,11 +161,19 @@ class buySellHalfViewController: UIViewController {
     }
     
     @objc func Tapbuy() {
-        print("購買了\(self.symbol!) +\(stockNumTextField.text!) 股")
+        print("購買了\(self.symbol!) \(self.stockName!) +\(stockNumTextField.text!) 股 \(self.stockPrice!)")
+        var updateBuyData = [
+            "": ["\(self.symbol!)", "\(self.stockName!)", "+\(stockNumTextField.text!)", "\(self.stockPrice!)"],
+        ]
+        viewModel.updateTreasuryData(with: updateBuyData)
     }
     
     @objc func TapSell() {
-        print("購買了\(self.symbol!) -\(stockNumTextField.text!) 股")
+        print("購買了\(self.symbol!) \(self.stockName!) -\(stockNumTextField.text!) 股 \(self.stockPrice!)")
+        var updateSellData = [
+            "": ["\(self.symbol!)", "\(self.stockName!)", "-\(stockNumTextField.text!)", "\(self.stockPrice!)"],
+        ]
+        viewModel.updateTreasuryData(with: updateSellData)
     }
     
     // MARK: - UI Setup

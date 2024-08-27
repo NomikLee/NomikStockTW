@@ -25,7 +25,7 @@ class AuthManager {
     func userInfoSave(uid: String, gender: String, birthday: String, firstName: String, lastName: String) {
         let db = Firestore.firestore()
         let treasuryData: [String: [String]] = [
-                "1": ["2330", "台積電", "5600", "30000", "+3232"]
+                "1": ["2330", "台積電", "1", "900"]
             ]
         
         let userMainInfo = db.collection("users").document(uid)
@@ -35,7 +35,7 @@ class AuthManager {
             "birthday" : birthday,
             "firstName" : firstName,
             "lastName" : lastName,
-            "money": "66600000",
+            "money": "1500000",
             "favorites" : ["2330"],
             "treasury" : treasuryData
         ]) { error in

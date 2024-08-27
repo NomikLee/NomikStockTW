@@ -15,6 +15,8 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     private let homeTitleName: [String] = ["自選股", "上漲排行"]
     private let selectionBarView = SelectionBarView()
     private var viewModel = FirestoreViewModels()
+    private var didReceiveTitle = PassthroughSubject<String, Never>()
+    private var favoriteRefresh = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -33,11 +35,19 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         homeTableView.dataSource = self
         homeTableView.delegate = self
         
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        homeTableView.refreshControl = refreshControl
+        
         let homeHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 240))
         homeHeaderView.delegate = self
         homeTableView.tableHeaderView = homeHeaderView
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: .didReceiveMessage, object: nil)
+        didReceiveTitle.sink { [weak self] title in
+            let vc = FastOrderViewController()
+            vc.title = title
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
         
     }
     
@@ -63,11 +73,11 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }
     
     // MARK: - Selectors
-    @objc private func handleNotification(_ notification: Notification) {
-        if let stockCode = notification.object as? String {
-            let vc = FastOrderViewController()
-            vc.title = stockCode
-            navigationController?.pushViewController(vc, animated: true)
+    @objc private func refreshData() {
+        favoriteRefresh.send()
+        homeTableView.reloadData()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            self?.homeTableView.refreshControl?.endRefreshing()
         }
     }
     
@@ -105,6 +115,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate, Collec
         switch indexPath.section {
         case 0:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: OptionalStocksTableViewCell.identifier, for: indexPath) as? OptionalStocksTableViewCell else { return UITableViewCell() }
+            cell.configureFavoritesRefresh(with: favoriteRefresh)
             return cell
         default:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksRankTableViewCell.identifier, for: indexPath) as? StocksRankTableViewCell else { return UITableViewCell() }

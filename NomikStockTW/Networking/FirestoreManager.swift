@@ -28,4 +28,39 @@ class FirestoreManager {
         }
         .eraseToAnyPublisher()
     }
+    
+    func updateMainDocument(from documentID: String, with treasuryData: [String: [String]]) -> AnyPublisher<Void, Error> {
+        return Future { promise in
+            self.db.collection("users").document(documentID).getDocument { doc, error in
+                if let error = error {
+                    promise(.failure(error))
+                }
+                
+                var existingDatas = doc?.data()?["treasury"] as? [String: [String]] ?? [:]
+                
+                for (_, value) in treasuryData {
+                    for (key, data) in existingDatas where data[0] == value[0] {
+                        existingDatas[key]?[2] = "\(Int(value[2])! + Int(data[2])!)"
+                        break
+                    }
+                    
+                    let flatNumbers = existingDatas.filter{ $0.value.contains(value[0]) }
+                    
+                    if flatNumbers == [:] {
+                        var addkey = Int(existingDatas.keys.sorted().last!)
+                        existingDatas["\(addkey! + 1)"] = value
+                    }
+                }
+    
+                self.db.collection("users").document(documentID).setData(["treasury": existingDatas], merge: true) { error in
+                    if let error = error {
+                        promise(.failure(error))
+                    } else {
+                        promise(.success(()))
+                    }
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
 }

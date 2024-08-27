@@ -16,6 +16,7 @@ class OptionalStocksTableViewCell: UITableViewCell {
     private let stockFetchDatasViewModel = StockFetchDatasViewModels()
     private var stockList: [String] = []
     private var stockDataDict: [String: IntradayQuoteModels] = [:]
+    private var didReceiveTitle = PassthroughSubject<String, Never>()
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
@@ -42,7 +43,6 @@ class OptionalStocksTableViewCell: UITableViewCell {
         
         bindView()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification), name: .changeOptionalList, object: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -53,6 +53,7 @@ class OptionalStocksTableViewCell: UITableViewCell {
         super.layoutSubviews()
         collectionView.frame = contentView.bounds
     }
+    
     
     // MARK: - Functions
     private func bindView(){
@@ -82,14 +83,14 @@ class OptionalStocksTableViewCell: UITableViewCell {
             .store(in: &cancellables)
     }
     
-    // MARK: - Selectors
-    @objc private func handleNotification() {
-        bindView()
+    public func configureFavoritesRefresh(with favoriteRefresh: PassthroughSubject<Void, Never>) {
+        favoriteRefresh.sink { [weak self] in
+            self?.bindView()
+        }
+        .store(in: &cancellables)
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
+    // MARK: - Selectors
     
     // MARK: - UI Setup
 }
@@ -118,11 +119,7 @@ extension OptionalStocksTableViewCell: UICollectionViewDelegate, UICollectionVie
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = collectionView.cellForItem(at: indexPath) as? OptionalStocksCollectionViewCell
         if let title = cell?.stockTitleNumLabel.text {
-            NotificationCenter.default.post(name: .didReceiveMessage, object: "\(title)")
+            didReceiveTitle.send(title)
         }
     }
-}
-
-extension Notification.Name {
-    static let didReceiveMessage = Notification.Name("didReceiveMessage")
 }
