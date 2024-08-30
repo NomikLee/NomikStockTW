@@ -9,11 +9,64 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 import Combine
+import FirebaseStorage
 
 class FirestoreViewModels: ObservableObject {
     
     @Published var mainDatas: UserProfileModels?
+    @Published var emailData: String?
+    @Published var uploadURL: String? = nil
+    @Published var userImage: UIImage? = nil
+    
     private var cancellables = Set<AnyCancellable>()
+    
+    func uploadImage(_ image: UIImage) {
+        let path = "images/\(UUID().uuidString).jpg"
+        StorageManager.shared.uploadImage(image, path: path)
+            .sink(receiveCompletion: { [weak self] completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    break
+                }
+            }, receiveValue: { [weak self] url in
+                self?.uploadURL = url
+            })
+            .store(in: &cancellables)
+    }
+    
+    func downloadImage(from path: String) {
+        StorageManager.shared.downloadImage(from: path)
+            .sink(receiveCompletion: { [weak self] completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    break
+                }
+            }, receiveValue: { [weak self] data in
+                if let image = UIImage(data: data) {
+                    self?.userImage = image
+                }
+            })
+            .store(in: &cancellables)
+    }
+    
+    func fetchUserAuthInfo() {
+        FirestoreManager.shared.userAuthInfo().receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            } receiveValue: { [weak self] email in
+                self?.emailData = email
+            }
+            .store(in: &cancellables)
+    }
         
     func fetchFirestoreMainData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }

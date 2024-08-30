@@ -12,9 +12,9 @@ class InventoryViewController: UIViewController {
     
     // MARK: - Variables
     var addData: [Double] = []
+    var dataArray: [String: [String]] = [:]
+    
     private let viewModel = FirestoreViewModels()
-    private let viewModelStockFetch = StockFetchDatasViewModels()
-    private var stockDataSubject = PassthroughSubject<Double, Never>()
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
@@ -157,8 +157,12 @@ class InventoryViewController: UIViewController {
         let rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.circlepath"), style: .plain, target: self, action: #selector(reroadTapped))
         navigationItem.rightBarButtonItem = rightBarButtonItem
         
+        let leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "doc.text"), style: .plain, target: self, action: #selector(tradeListTapped))
+        navigationItem.leftBarButtonItem = leftBarButtonItem
+        
         configureUI()
         bindView()
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -170,17 +174,13 @@ class InventoryViewController: UIViewController {
     private func bindView(){
         viewModel.fetchFirestoreMainData()
         viewModel.$mainDatas.receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] data in
+                if let dataArrays = data?.treasury {
+                    self?.dataArray = dataArrays
+                }
                 self?.inventoryCollectionView.reloadData()
             }
             .store(in: &cancellables)
-        
-        stockDataSubject.sink { [weak self] data in
-            self?.addData.append(data)
-            let sum = self?.addData.reduce(0.0, +)
-            self?.stockValueLabel.text = "\(sum!) 元"
-        }
-        .store(in: &cancellables)
     }
     
     // MARK: - Selectors
@@ -190,10 +190,19 @@ class InventoryViewController: UIViewController {
         
         viewModel.fetchFirestoreMainData()
         viewModel.$mainDatas.receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] data in
+                if let dataArrays = data?.treasury {
+                    self?.dataArray = dataArrays
+                }
                 self?.inventoryCollectionView.reloadData()
             }
             .store(in: &cancellables)
+    }
+    
+    @objc private func tradeListTapped() {
+        let vc = TradeListViewController()
+        vc.title = "交易紀錄"
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     // MARK: - UI Setup
@@ -279,27 +288,20 @@ extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDat
             return UICollectionViewCell()
         }
         
-        switch indexPath.item {
+        cell.prepareForReuse()
+        
+        switch indexPath.row {
         case 0:
             cell.isHidden = true
         default:
             cell.isHidden = false
-            var dataArray = viewModel.mainDatas?.treasury["\(indexPath.row)"]
-            
-            viewModelStockFetch.inventoryIntradayQuoteFetchDatas(with: dataArray?[0] ?? "")
-            viewModelStockFetch.$inventoryIntradayQuoteDatas
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] data in
-                    if let data = data {
-                        if data.symbol == dataArray?[0] {
-                            let stockProfitLoss = data.closePrice * (Double(dataArray?[2] ?? "") ?? 0.0)
-                            self?.stockDataSubject.send(stockProfitLoss)
-                            cell.backgroundColor = .secondaryLabel
-                            cell.configureInventoryData(with: dataArray?[0] ?? "", stockName: dataArray?[1] ?? "", stockNum: dataArray?[2] ?? "", stockCost: dataArray?[3] ?? "", StockProfitLoss: "\(stockProfitLoss)")
-                        }
-                    }
-                }
-                .store(in: &cancellables)
+            cell.backgroundColor = .secondaryLabel
+            cell.configureInventoryData(
+                with: dataArray["\(indexPath.row)"]?[0] ?? "",
+                stockName: dataArray["\(indexPath.row)"]?[1] ?? "",
+                stockNum: dataArray["\(indexPath.row)"]?[2] ?? "",
+                stockCost: dataArray["\(indexPath.row)"]?[3] ?? "",
+                StockProfitLoss: "111")
         }
         return cell
     }

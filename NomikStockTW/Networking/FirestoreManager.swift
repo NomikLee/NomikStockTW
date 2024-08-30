@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 import Combine
+import FirebaseAuth
 
 class FirestoreManager {
     
@@ -16,6 +17,17 @@ class FirestoreManager {
     private let db = Firestore.firestore()
     
     // MARK: - Functions
+    func userAuthInfo() -> AnyPublisher<String, Error> {
+        return Future { promise in
+            if let email = Auth.auth().currentUser?.email {
+                promise(.success(email))
+            }else {
+                promise(.failure(Error.self as! Error))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+    
     func getMainDocument(from documentID: String) -> AnyPublisher<DocumentSnapshot?, Error> {
         return Future { promise in
             self.db.collection("users").document(documentID).getDocument { doc, error in

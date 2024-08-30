@@ -15,7 +15,6 @@ class FastOrderViewController: UIViewController {
     // MARK: - Variables
     private let db = Firestore.firestore()
     private let viewModel = StockFetchDatasViewModels()
-    private var changeOptionalList = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     
     
@@ -307,7 +306,17 @@ class FastOrderViewController: UIViewController {
         viewModel.$intradayQuoteDatas.sink { [weak self] quoteData in
             self?.fastOrderNameLabel.text = "\(quoteData?.name ?? "---")"
             self?.fastOrderPriceLabel.text = "\(quoteData?.closePrice ?? 0.0)"
-            self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
+            
+            if let firstPart = quoteData?.change, firstPart > 0 {
+                self?.fastOrderIncreasePriceLabel.textColor = .systemRed
+                self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
+            }else if let firstPart = quoteData?.change, firstPart < 0 {
+                self?.fastOrderIncreasePriceLabel.textColor = .systemGreen
+                self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
+            }else {
+                self?.fastOrderIncreasePriceLabel.textColor = .white
+                self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
+            }
             
             let volumeAtTotel = (quoteData?.total.tradeVolumeAtBid ?? 0.0) + (quoteData?.total.tradeVolumeAtAsk ?? 0.0)
             let atBidPercent = (quoteData?.total.tradeVolumeAtBid ?? 0.0) / volumeAtTotel
@@ -437,7 +446,7 @@ class FastOrderViewController: UIViewController {
     }
     
     private func showBuySellHalf(_ buyAndSell: String, buyAndSellName: String, buyAndSellPrice: String, buyAndSellSymbol: String){
-        let halfVC = buySellHalfViewController(title: buyAndSell, stockName: buyAndSellName, stockPrice: buyAndSellPrice , Symbol: buyAndSellSymbol)
+        let halfVC = BuySellHalfViewController(title: buyAndSell, stockName: buyAndSellName, stockPrice: buyAndSellPrice , Symbol: buyAndSellSymbol)
         
         if let sheet = halfVC.sheetPresentationController {
             sheet.detents = [.medium()]

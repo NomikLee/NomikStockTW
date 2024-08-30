@@ -8,15 +8,20 @@
 import UIKit
 import Combine
 
+protocol CollectionPushOptionalStockDelegate: AnyObject {
+    func pushOptionalStockCollectionCell(_ stockCode: String)
+}
+
 class OptionalStocksTableViewCell: UITableViewCell {
     
     // MARK: - Variables
     static let identifier = "OptionalStocksTableViewCell"
+    weak var delegate: CollectionPushOptionalStockDelegate?
+    
     private let firestoreViewModel = FirestoreViewModels()
     private let stockFetchDatasViewModel = StockFetchDatasViewModels()
     private var stockList: [String] = []
     private var stockDataDict: [String: IntradayQuoteModels] = [:]
-    private var didReceiveTitle = PassthroughSubject<String, Never>()
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
@@ -42,6 +47,11 @@ class OptionalStocksTableViewCell: UITableViewCell {
         collectionView.dataSource = self
         
         bindView()
+        
+        PublisherManerger.shared.favoriteRefresh.sink { [weak self] in
+           self?.bindView()
+       }
+       .store(in: &cancellables)
         
     }
     
@@ -83,13 +93,6 @@ class OptionalStocksTableViewCell: UITableViewCell {
             .store(in: &cancellables)
     }
     
-    public func configureFavoritesRefresh(with favoriteRefresh: PassthroughSubject<Void, Never>) {
-        favoriteRefresh.sink { [weak self] in
-            self?.bindView()
-        }
-        .store(in: &cancellables)
-    }
-    
     // MARK: - Selectors
     
     // MARK: - UI Setup
@@ -104,7 +107,7 @@ extension OptionalStocksTableViewCell: UICollectionViewDelegate, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: OptionalStocksCollectionViewCell.identifier, for: indexPath) as? OptionalStocksCollectionViewCell else { return UICollectionViewCell() }
-        cell.backgroundColor = .systemPink
+        cell.backgroundColor = UIColor(red: 58/255, green: 28/255, blue: 191/255, alpha: 1)
         cell.layer.cornerRadius = 20
         
         let symbol = stockList[indexPath.row]
@@ -119,7 +122,7 @@ extension OptionalStocksTableViewCell: UICollectionViewDelegate, UICollectionVie
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = collectionView.cellForItem(at: indexPath) as? OptionalStocksCollectionViewCell
         if let title = cell?.stockTitleNumLabel.text {
-            didReceiveTitle.send(title)
+            delegate?.pushOptionalStockCollectionCell(title)
         }
     }
 }

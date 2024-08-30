@@ -15,8 +15,6 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     private let homeTitleName: [String] = ["自選股", "上漲排行"]
     private let selectionBarView = SelectionBarView()
     private var viewModel = FirestoreViewModels()
-    private var didReceiveTitle = PassthroughSubject<String, Never>()
-    private var favoriteRefresh = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -24,6 +22,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         let tableView = UITableView()
         tableView.register(OptionalStocksTableViewCell.self, forCellReuseIdentifier: OptionalStocksTableViewCell.identifier)
         tableView.register(StocksRankTableViewCell.self, forCellReuseIdentifier: StocksRankTableViewCell.identifier)
+        tableView.separatorStyle = .none
         return tableView
     }()
     
@@ -39,16 +38,9 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         homeTableView.refreshControl = refreshControl
         
-        let homeHeaderView = HomeHeaderVIew(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 240))
+        let homeHeaderView = HomeHeaderView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 240))
         homeHeaderView.delegate = self
         homeTableView.tableHeaderView = homeHeaderView
-        
-        didReceiveTitle.sink { [weak self] title in
-            let vc = FastOrderViewController()
-            vc.title = title
-            self?.navigationController?.pushViewController(vc, animated: true)
-        }
-        
     }
     
     override func viewDidLayoutSubviews() {
@@ -74,7 +66,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     // MARK: - Selectors
     @objc private func refreshData() {
-        favoriteRefresh.send()
+        PublisherManerger.shared.favoriteRefresh.send()
         homeTableView.reloadData()
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             self?.homeTableView.refreshControl?.endRefreshing()
@@ -86,8 +78,14 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
 }
 
 // MARK: - Extension
-extension HomeViewController: UITableViewDataSource, UITableViewDelegate, CollectionPushStockRankDelegate {
-    func pushStockRankCollectionCell(_ indexPush: Int, stockCode: String) {
+extension HomeViewController: UITableViewDataSource, UITableViewDelegate, CollectionPushStockRankDelegate, CollectionPushOptionalStockDelegate {
+    func pushOptionalStockCollectionCell(_ stockCode: String) {
+        let vc = FastOrderViewController()
+        vc.title = stockCode
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func pushStockRankCollectionCell(_ stockCode: String) {
         let vc = FastOrderViewController()
         vc.title = stockCode
         navigationController?.pushViewController(vc, animated: true)
@@ -115,13 +113,13 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate, Collec
         switch indexPath.section {
         case 0:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: OptionalStocksTableViewCell.identifier, for: indexPath) as? OptionalStocksTableViewCell else { return UITableViewCell() }
-            cell.configureFavoritesRefresh(with: favoriteRefresh)
+            cell.delegate = self
             return cell
         default:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksRankTableViewCell.identifier, for: indexPath) as? StocksRankTableViewCell else { return UITableViewCell() }
             
             cell.delegate = self
-            selectionBarView.selectionPublisher.sink { [weak self] selection in
+            PublisherManerger.shared.selectionPublisher.sink { [weak self] selection in
                 switch selection {
                 case .up:
                     cell.configureSelectNum(with: 0)
@@ -165,7 +163,7 @@ extension HomeViewController: HomeHeaderViewDelegate {
     }
 }
 
-extension HomeViewController: logoutDelegate {
+extension HomeViewController: logoutDelegate, UIImagePickerControllerDelegate {
     func logoutButtonTap() {
         try? Auth.auth().signOut()
         checkCurrentUser()

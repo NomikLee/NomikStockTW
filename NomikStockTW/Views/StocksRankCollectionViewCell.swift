@@ -40,7 +40,7 @@ class StocksRankCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "$----"
-        label.textColor = .white
+        label.textColor = .label
         label.textAlignment = .right
         label.font = UIFont.systemFont(ofSize: 25, weight: .bold)
         label.numberOfLines = 0
@@ -51,7 +51,6 @@ class StocksRankCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "---(----%)"
-        label.textColor = .systemGreen
         label.textAlignment = .right
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.numberOfLines = 0
@@ -79,7 +78,17 @@ class StocksRankCollectionViewCell: UICollectionViewCell {
         self.stockTitleNameLabel.text = titleName
         self.stockTitleNumLabel.text = titleNum
         self.stockPriceLabel.text = "\(price)"
-        self.stockIncreasePriceLabel.text = "\(increasePrice)(\(pricePercent)%)"
+        
+        if increasePrice > 0 {
+            self.stockIncreasePriceLabel.text = "\(increasePrice)(\(pricePercent)%)"
+            self.stockIncreasePriceLabel.textColor = .systemRed
+        } else if increasePrice < 0 {
+            self.stockIncreasePriceLabel.text = "\(increasePrice)(\(pricePercent)%)"
+            self.stockIncreasePriceLabel.textColor = .systemGreen
+        } else {
+            self.stockIncreasePriceLabel.text = "\(increasePrice)(\(pricePercent)%)"
+            self.stockIncreasePriceLabel.textColor = .white
+        }
     }
     // MARK: - Selectors
     // MARK: - UI Setup

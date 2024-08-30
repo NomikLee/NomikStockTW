@@ -28,16 +28,22 @@ class AuthManager {
                 "1": ["2330", "台積電", "1", "900"]
             ]
         
+        let listData: [String: [String]] = [
+                "1": ["2024/08/01", "台積電", "+1", "900"]
+            ]
+        
         let userMainInfo = db.collection("users").document(uid)
         userMainInfo.setData([
             "uid" : uid,
+            "imagePath" : "",
             "gender" : gender,
             "birthday" : birthday,
             "firstName" : firstName,
             "lastName" : lastName,
             "money": "1500000",
             "favorites" : ["2330"],
-            "treasury" : treasuryData
+            "treasury" : treasuryData,
+            "list" : listData
         ]) { error in
             if let error = error {
                 print(error.localizedDescription)

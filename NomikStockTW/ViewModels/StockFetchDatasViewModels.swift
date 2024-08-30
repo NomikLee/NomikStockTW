@@ -18,7 +18,6 @@ final class StockFetchDatasViewModels: ObservableObject {
     @Published var intradayQuoteDatas: IntradayQuoteModels?
     @Published var intradayCandlesDatas: IntradayCandlesModels?
     @Published var favoritesIntradayQuoteDatas: IntradayQuoteModels?
-    @Published var inventoryIntradayQuoteDatas: IntradayQuoteModels?
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -131,22 +130,6 @@ final class StockFetchDatasViewModels: ObservableObject {
                 }
             } receiveValue: { [weak self] favoritesIntradayQuoteData in
                 self?.favoritesIntradayQuoteDatas = favoritesIntradayQuoteData
-            }
-            .store(in: &cancellables)
-    }
-    
-    func inventoryIntradayQuoteFetchDatas(with symbol: String){
-        APIServiceManerger.shared.getInventoryIntradayQuote(symbol: symbol)
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    print(error.localizedDescription)
-                }
-            } receiveValue: { [weak self] inventoryIntradayQuoteData in
-                self?.inventoryIntradayQuoteDatas = inventoryIntradayQuoteData
             }
             .store(in: &cancellables)
     }

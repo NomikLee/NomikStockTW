@@ -75,7 +75,20 @@ class OptionalStocksCollectionViewCell: UICollectionViewCell {
         self.stockTitleNameLabel.text = stockName
         self.stockTitleNumLabel.text = stockNum
         self.stockPriceLabel.text = stockPrice
-        self.stockIncreasePriceLabel.text = stockIncreasePrice
+        
+        if let firstPart = stockIncreasePrice.split(separator: "(").first {
+            let firstPartNum = Double(firstPart)
+            if firstPartNum! > 0 {
+                self.stockIncreasePriceLabel.text = stockIncreasePrice
+                self.stockIncreasePriceLabel.textColor = .systemRed
+            }else if firstPartNum! < 0 {
+                self.stockIncreasePriceLabel.text = stockIncreasePrice
+                self.stockIncreasePriceLabel.textColor = .systemGreen
+            }else {
+                self.stockIncreasePriceLabel.text = stockIncreasePrice
+                self.stockIncreasePriceLabel.textColor = .white
+            }
+        }
     }
     // MARK: - Selectors
     // MARK: - UI Setup

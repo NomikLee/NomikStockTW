@@ -18,7 +18,6 @@ class InventoryCollectionViewCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.text = "00632R"
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         return label
     }()
@@ -28,7 +27,6 @@ class InventoryCollectionViewCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.text = "元大台灣50反1"
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         return label
     }()
@@ -38,7 +36,6 @@ class InventoryCollectionViewCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.text = "560000 股"
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         return label
     }()
@@ -48,7 +45,6 @@ class InventoryCollectionViewCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.text = "250000000 元"
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         return label
     }()
@@ -58,7 +54,6 @@ class InventoryCollectionViewCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.text = "+8988000 元"
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         return label
     }()
@@ -81,7 +76,6 @@ class InventoryCollectionViewCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.isHidden = false
     }
     
     

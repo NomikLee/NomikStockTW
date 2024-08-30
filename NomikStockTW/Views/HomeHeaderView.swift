@@ -1,5 +1,5 @@
 //
-//  HomeHeaderVIew.swift
+//  HomeHeaderView.swift
 //  NomikStockTW
 //
 //  Created by Pinocchio on 2024/7/3.
@@ -12,7 +12,7 @@ protocol HomeHeaderViewDelegate: AnyObject {
     func didTapUserHeaderImage()
 }
 
-class HomeHeaderVIew: UIView {
+class HomeHeaderView: UIView {
     
     // MARK: - Variables
     weak var delegate: HomeHeaderViewDelegate?
@@ -125,6 +125,10 @@ class HomeHeaderVIew: UIView {
     // MARK: - Functions
     private func bindView() {
         viewModel.fetchFirestoreMainData()
+        
+        let path = "images/486298C6-9A7E-4116-8B97-51032F151D09.jpg"
+        viewModel.downloadImage(from: path)
+        
         viewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] data in
             guard let data = data else { return }
@@ -132,12 +136,18 @@ class HomeHeaderVIew: UIView {
             self?.nameHeaderLabel.text = "Hi \(data.lastName)"
         }
         .store(in: &cancellables)
+        
+        viewModel.$userImage.receive(on: DispatchQueue.main)
+            .sink { [weak self] image in
+                self?.userHeaderImageView.image = image
+            }
+            .store(in: &cancellables)
     }
     
     private func setupGradientLayer() {
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [
-            UIColor.systemRed.cgColor,
+            UIColor.systemPink.cgColor,
             UIColor.systemFill.cgColor
         ]
         gradientLayer.frame = balanceHeaderView.bounds

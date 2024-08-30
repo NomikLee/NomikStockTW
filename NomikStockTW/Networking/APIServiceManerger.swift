@@ -167,20 +167,4 @@ struct APIServiceManerger {
             }
             .eraseToAnyPublisher()
     }
-    
-    //Get庫存股價數據
-    func getInventoryIntradayQuote(symbol: String) -> AnyPublisher<IntradayQuoteModels, Error> {
-        var url = URL(string: APIConstants.baseURL + Endpoints.intradayQuote(symbol).valueEndpoints())
-        
-        var request = URLRequest(url: url!)
-        request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
-        
-        return URLSession.shared.dataTaskPublisher(for: request)
-            .map{ $0.data }
-            .decode(type: IntradayQuoteModels.self, decoder: JSONDecoder())
-            .mapError { error in
-                return error as? URLError ?? URLError(.unknown)
-            }
-            .eraseToAnyPublisher()
-    }
 }

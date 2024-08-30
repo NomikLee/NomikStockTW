@@ -9,15 +9,16 @@ import UIKit
 import Combine
 
 protocol CollectionPushStockRankDelegate: AnyObject {
-    func pushStockRankCollectionCell(_ indexPush: Int, stockCode: String)
+    func pushStockRankCollectionCell(_ stockCode: String)
 }
 
 class StocksRankTableViewCell: UITableViewCell {
    
     // MARK: - Variables
     static let identifier = "StocksRankTableViewCell"
-    private var stockFetchDatasViewModel = StockFetchDatasViewModels()
     weak var delegate: CollectionPushStockRankDelegate?
+    
+    private var stockFetchDatasViewModel = StockFetchDatasViewModels()
     private var selectNum: Int?
     private var cancellables = Set<AnyCancellable>()
     
@@ -43,7 +44,12 @@ class StocksRankTableViewCell: UITableViewCell {
         collectionView.delegate = self
         collectionView.dataSource = self
         
-        binView()
+        bindView()
+        
+        Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.bindView()
+        }
+        
     }
     
     required init?(coder: NSCoder) {
@@ -56,7 +62,7 @@ class StocksRankTableViewCell: UITableViewCell {
     }
     
     // MARK: - Functions
-    private func binView() {
+    private func bindView() {
         stockFetchDatasViewModel.moversUPFetchDatas()
         stockFetchDatasViewModel.$moversUPDatas.sink { [weak self] _ in
             self?.collectionView.reloadData()
@@ -73,6 +79,7 @@ class StocksRankTableViewCell: UITableViewCell {
         self.collectionView.reloadData()
     }
     
+    
     // MARK: - Selectors
     // MARK: - UI Setup
 }
@@ -85,8 +92,10 @@ extension StocksRankTableViewCell: UICollectionViewDelegate, UICollectionViewDat
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StocksRankCollectionViewCell.identifier, for: indexPath) as? StocksRankCollectionViewCell else { return UICollectionViewCell() }
-        cell.backgroundColor = .systemBlue
+        cell.backgroundColor = .systemGray2
         cell.layer.cornerRadius = 20
+        cell.layer.borderWidth = 2
+        cell.layer.borderColor = UIColor.systemOrange.cgColor
         
         
         switch selectNum {
@@ -137,7 +146,7 @@ extension StocksRankTableViewCell: UICollectionViewDelegate, UICollectionViewDat
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = collectionView.cellForItem(at: indexPath) as? StocksRankCollectionViewCell
         if let title = cell?.stockTitleNumLabel.text {
-            delegate?.pushStockRankCollectionCell(indexPath.row, stockCode: title)
+            delegate?.pushStockRankCollectionCell(title)
         }
     }
 }
