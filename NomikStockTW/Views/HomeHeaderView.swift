@@ -8,16 +8,10 @@
 import UIKit
 import Combine
 
-protocol HomeHeaderViewDelegate: AnyObject {
-    func didTapUserHeaderImage()
-}
-
 class HomeHeaderView: UIView {
     
     // MARK: - Variables
-    weak var delegate: HomeHeaderViewDelegate?
-    
-    private var viewModel = FirestoreViewModels()
+    private var firestoreViewModel = FirestoreViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -106,11 +100,12 @@ class HomeHeaderView: UIView {
         balanceHeaderView.addSubview(totalBalanceLabel)
         balanceHeaderView.addSubview(profitTodayLabel)
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(userHeaderImageViewTapped))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(userHeaderImageViewTap))
         userHeaderImageView.addGestureRecognizer(tapGesture)
         
         configureUI()
         bindView()
+        publisherFN()
     }
     
     override func layoutSubviews() {
@@ -124,20 +119,17 @@ class HomeHeaderView: UIView {
     
     // MARK: - Functions
     private func bindView() {
-        viewModel.fetchFirestoreMainData()
-        
-        let path = "images/486298C6-9A7E-4116-8B97-51032F151D09.jpg"
-        viewModel.downloadImage(from: path)
-        
-        viewModel.$mainDatas.receive(on: DispatchQueue.main)
+        firestoreViewModel.fetchFirestoreMainData()
+        firestoreViewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] data in
             guard let data = data else { return }
-                self?.totalBalanceLabel.text = "\(data.money)"
+            self?.firestoreViewModel.downloadImage(from: data.imagePath)
+            self?.totalBalanceLabel.text = "\(data.money)"
             self?.nameHeaderLabel.text = "Hi \(data.lastName)"
         }
         .store(in: &cancellables)
         
-        viewModel.$userImage.receive(on: DispatchQueue.main)
+        firestoreViewModel.$userImage.receive(on: DispatchQueue.main)
             .sink { [weak self] image in
                 self?.userHeaderImageView.image = image
             }
@@ -154,9 +146,17 @@ class HomeHeaderView: UIView {
         balanceHeaderView.layer.insertSublayer(gradientLayer, at: 0)
     }
     
+    private func publisherFN() {
+        PublisherManerger.shared.logoImageChangePublisher.receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.bindView()
+            }
+            .store(in: &cancellables)
+    }
+    
     // MARK: - Selectors
-    @objc private func userHeaderImageViewTapped() {
-        delegate?.didTapUserHeaderImage()
+    @objc private func userHeaderImageViewTap() {
+        PublisherManerger.shared.userHeaderImageTapPublisher.send()
     }
     
     // MARK: - UI Setup

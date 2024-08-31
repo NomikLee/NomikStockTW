@@ -14,7 +14,7 @@ class BuySellHalfViewController: UIViewController {
     private var symbol: String?
     private var stockName: String?
     private var stockPrice: String?
-    private let viewModel = FirestoreViewModels()
+    private let firestoreViewModel = FirestoreViewModels()
     
     // MARK: - UI Components
     private let buySellTitleContainer: UIView = {
@@ -163,22 +163,41 @@ class BuySellHalfViewController: UIViewController {
     }
     
     @objc func Tapbuy() {
-        print("購買了\(self.symbol!) \(self.stockName!) +\(stockNumTextField.text!) 股 \(self.stockPrice!)")
-        PublisherManerger.shared.tradelistPublisher.send(["\(self.symbol!)", "\(self.stockName!)", "+\(stockNumTextField.text!)", "\(self.stockPrice!)"])
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let nowDay = dateFormatter.string(from: Date())
+        
+        print("\(nowDay) 購買了\(self.symbol!) \(self.stockName!) +\(stockNumTextField.text!) 股 \(self.stockPrice!)")
         
         let updateBuyData = [
             "": ["\(self.symbol!)", "\(self.stockName!)", "+\(stockNumTextField.text!)", "\(self.stockPrice!)"],
         ]
-        viewModel.updateTreasuryData(with: updateBuyData)
+        
+        let updateListBuyData = [
+            "": ["\(nowDay)", "\(self.symbol!)", "\(self.stockName!)", "+\(stockNumTextField.text!)", "\(self.stockPrice!)"],
+        ]
+        
+        firestoreViewModel.updateListData(with: updateListBuyData)
+        firestoreViewModel.updateTreasuryData(with: updateBuyData)
     }
     
     @objc func TapSell() {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let nowDay = dateFormatter.string(from: Date())
+        
         print("購買了\(self.symbol!) \(self.stockName!) -\(stockNumTextField.text!) 股 \(self.stockPrice!)")
         
         let updateSellData = [
             "": ["\(self.symbol!)", "\(self.stockName!)", "-\(stockNumTextField.text!)", "\(self.stockPrice!)"],
         ]
-        viewModel.updateTreasuryData(with: updateSellData)
+        
+        let updateListBuyData = [
+            "": ["\(nowDay)", "\(self.symbol!)", "\(self.stockName!)", "-\(stockNumTextField.text!)", "\(self.stockPrice!)"],
+        ]
+        
+        firestoreViewModel.updateListData(with: updateListBuyData)
+        firestoreViewModel.updateTreasuryData(with: updateSellData)
     }
     
     // MARK: - UI Setup

@@ -34,13 +34,16 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         homeTableView.dataSource = self
         homeTableView.delegate = self
         
+        //重新整理
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         homeTableView.refreshControl = refreshControl
         
+        //Header畫面
         let homeHeaderView = HomeHeaderView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 240))
-        homeHeaderView.delegate = self
         homeTableView.tableHeaderView = homeHeaderView
+        
+        publisherFN()
     }
     
     override func viewDidLayoutSubviews() {
@@ -64,9 +67,43 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         }
     }
     
+    private func publisherFN(){
+        PublisherManerger.shared.logoutButtonTapPublisher.receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                try? Auth.auth().signOut()
+                self?.checkCurrentUser()
+            }
+            .store(in: &cancellables)
+        
+        
+        PublisherManerger.shared.userHeaderImageTapPublisher.receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                let userSettingVC = UserSettingViewController()
+                userSettingVC.modalPresentationStyle = .automatic
+                self?.present(userSettingVC, animated: true)
+            }
+            .store(in: &cancellables)
+        
+        PublisherManerger.shared.pushOptionalStockCollectionCell.receive(on: DispatchQueue.main)
+            .sink { [weak self] stockCode in
+                let vc = FastOrderViewController()
+                vc.title = stockCode
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+            .store(in: &cancellables)
+        
+        PublisherManerger.shared.pushStockRankCollectionCell.receive(on: DispatchQueue.main)
+            .sink { [weak self] stockCode in
+                let vc = FastOrderViewController()
+                vc.title = stockCode
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+            .store(in: &cancellables)
+    }
+    
     // MARK: - Selectors
     @objc private func refreshData() {
-        PublisherManerger.shared.favoriteRefresh.send()
+        PublisherManerger.shared.favoriteRefreshPublisher.send()
         homeTableView.reloadData()
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             self?.homeTableView.refreshControl?.endRefreshing()
@@ -74,23 +111,10 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }
     
     // MARK: - UI Setup
-
 }
 
 // MARK: - Extension
-extension HomeViewController: UITableViewDataSource, UITableViewDelegate, CollectionPushStockRankDelegate, CollectionPushOptionalStockDelegate {
-    func pushOptionalStockCollectionCell(_ stockCode: String) {
-        let vc = FastOrderViewController()
-        vc.title = stockCode
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
-    func pushStockRankCollectionCell(_ stockCode: String) {
-        let vc = FastOrderViewController()
-        vc.title = stockCode
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
+extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
         return homeTitleName.count
     }
@@ -113,30 +137,29 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate, Collec
         switch indexPath.section {
         case 0:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: OptionalStocksTableViewCell.identifier, for: indexPath) as? OptionalStocksTableViewCell else { return UITableViewCell() }
-            cell.delegate = self
             return cell
         default:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksRankTableViewCell.identifier, for: indexPath) as? StocksRankTableViewCell else { return UITableViewCell() }
             
-            cell.delegate = self
-            PublisherManerger.shared.selectionPublisher.sink { [weak self] selection in
-                switch selection {
-                case .up:
-                    cell.configureSelectNum(with: 0)
-                case .down:
-                    cell.configureSelectNum(with: 1)
-                case .volume:
-                    cell.configureSelectNum(with: 2)
-                case .value:
-                    cell.configureSelectNum(with: 3)
+            PublisherManerger.shared.selectionPublisher.receive(on: DispatchQueue.main)
+                .sink { [weak self] selection in
+                    switch selection {
+                    case .up:
+                        cell.configureSelectNum(with: 0)
+                    case .down:
+                        cell.configureSelectNum(with: 1)
+                    case .volume:
+                        cell.configureSelectNum(with: 2)
+                    case .value:
+                        cell.configureSelectNum(with: 3)
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
             return cell
         }
     }
     
-    //返回section的內容
+    //section的內容
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == 1 {
             return selectionBarView
@@ -150,23 +173,6 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate, Collec
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 50
-    }
-}
-
-extension HomeViewController: HomeHeaderViewDelegate {
-    
-    func didTapUserHeaderImage() {
-        let userSettingVC = UserSettingViewController()
-        userSettingVC.delegate = self
-        userSettingVC.modalPresentationStyle = .automatic
-        present(userSettingVC, animated: true)
-    }
-}
-
-extension HomeViewController: logoutDelegate, UIImagePickerControllerDelegate {
-    func logoutButtonTap() {
-        try? Auth.auth().signOut()
-        checkCurrentUser()
     }
 }
 

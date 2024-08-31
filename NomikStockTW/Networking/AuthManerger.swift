@@ -29,7 +29,7 @@ class AuthManager {
             ]
         
         let listData: [String: [String]] = [
-                "1": ["2024/08/01", "台積電", "+1", "900"]
+                "0": ["2024-08-01", "2330", "台積電", "+1", "900"]
             ]
         
         let userMainInfo = db.collection("users").document(uid)

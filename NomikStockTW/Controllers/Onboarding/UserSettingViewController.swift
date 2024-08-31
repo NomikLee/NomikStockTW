@@ -8,15 +8,10 @@
 import UIKit
 import Combine
 
-protocol logoutDelegate: AnyObject {
-    func logoutButtonTap()
-}
-
 class UserSettingViewController: UIViewController {
     
     // MARK: - Variables
-    private var viewModel = FirestoreViewModels()
-    weak var delegate: logoutDelegate?
+    private var firestoreviewModel = FirestoreViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -103,29 +98,29 @@ class UserSettingViewController: UIViewController {
         view.addSubview(userEmailTitleUILabel)
         view.addSubview(userEmailUILabel)
         
-        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
+        logoutButton.addTarget(self, action: #selector(logoutButtonTap), for: .touchUpInside)
         configureUI()
         bindView()
         tapGesture()
+        publisherFN()
     }
     
     // MARK: - Functions
     private func bindView() {
+        firestoreviewModel.fetchUserAuthInfo()
+        firestoreviewModel.fetchFirestoreMainData()
         
-        viewModel.fetchUserAuthInfo()
-        viewModel.fetchFirestoreMainData()
-        
-        let path = "images/486298C6-9A7E-4116-8B97-51032F151D09.jpg"
-        viewModel.downloadImage(from: path)
-        
-        viewModel.$emailData.receive(on: DispatchQueue.main)
+        firestoreviewModel.$emailData.receive(on: DispatchQueue.main)
             .sink { [weak self] email in
                 self?.userEmailUILabel.text = email
             }
             .store(in: &cancellables)
         
-        viewModel.$mainDatas.receive(on: DispatchQueue.main)
+        firestoreviewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] infoDatas in
+                if let path = infoDatas?.imagePath {
+                    self?.firestoreviewModel.downloadImage(from: path)
+                }
                 self?.userbirthdayUILabel.text = infoDatas?.birthday
                 if let firstName = infoDatas?.firstName, let lastName = infoDatas?.lastName {
                     self?.userNameUILabel.text = "\(firstName.capitalized) \(lastName.capitalized)"
@@ -133,7 +128,7 @@ class UserSettingViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$userImage.receive(on: DispatchQueue.main)
+        firestoreviewModel.$userImage.receive(on: DispatchQueue.main)
             .sink { [weak self] image in
                 self?.userImageView.image = image
             }
@@ -145,9 +140,17 @@ class UserSettingViewController: UIViewController {
         userImageView.addGestureRecognizer(tap)
     }
     
+    private func publisherFN() {
+        PublisherManerger.shared.logoImageChangePublisher.receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.bindView()
+            }
+            .store(in: &cancellables)
+    }
+    
     // MARK: - Selectors
-    @objc private func logoutButtonTapped() {
-        delegate?.logoutButtonTap()
+    @objc private func logoutButtonTap() {
+        PublisherManerger.shared.logoutButtonTapPublisher.send()
     }
     
     @objc private func imageTapped() {
@@ -209,8 +212,7 @@ class UserSettingViewController: UIViewController {
 extension UserSettingViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let selectImage = info[.originalImage] as? UIImage {
-            viewModel.uploadImage(selectImage)
-            userImageView.image = selectImage
+            firestoreviewModel.uploadImage(selectImage)
         }
         dismiss(animated: true)
     }

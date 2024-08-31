@@ -14,10 +14,9 @@ class FastOrderViewController: UIViewController {
     
     // MARK: - Variables
     private let db = Firestore.firestore()
-    private let viewModel = StockFetchDatasViewModels()
+    private let stockFetchDatasViewModel = StockFetchDatasViewModels()
     private var cancellables = Set<AnyCancellable>()
-    
-    
+
     // MARK: - UI Components
     private let fastOrderView: UIView = {
         let view = UIView()
@@ -44,7 +43,7 @@ class FastOrderViewController: UIViewController {
     private let fastOrderNameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "台積電"
+        label.text = "---"
         label.font = .systemFont(ofSize: 24, weight: .semibold)
         label.textColor = .white
         label.textAlignment = .left
@@ -54,7 +53,7 @@ class FastOrderViewController: UIViewController {
     private let fastOrderPriceLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "$1040.0"
+        label.text = "$---.-"
         label.textColor = .white
         label.textAlignment = .right
         label.font = UIFont.systemFont(ofSize: 25, weight: .bold)
@@ -65,7 +64,7 @@ class FastOrderViewController: UIViewController {
     private let fastOrderIncreasePriceLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "-300.50(-9.96%)"
+        label.text = "----.--(--.--%)"
         label.textColor = .systemGreen
         label.textAlignment = .right
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -138,7 +137,7 @@ class FastOrderViewController: UIViewController {
         label.font = .systemFont(ofSize: 14, weight: .bold)
         label.textColor = .green
         label.textAlignment = .left
-        label.text = "內盤 253898.5 (45.60%)"
+        label.text = "內盤 ------.- (--.--%)"
         return label
     }()
     
@@ -149,7 +148,7 @@ class FastOrderViewController: UIViewController {
         label.font = .systemFont(ofSize: 14, weight: .bold)
         label.textColor = .red
         label.textAlignment = .right
-        label.text = "外盤 303008.5 (55.40%)"
+        label.text = "外盤 -----.- (--.--%)"
         return label
     }()
     
@@ -282,18 +281,13 @@ class FastOrderViewController: UIViewController {
         binView()
     }
     
-    
-    
     // MARK: - Functions
     private func binView(){
-        
         guard let currentTitle = self.title else { return }
-        
         guard let userId = Auth.auth().currentUser?.uid else { return }
+        
         db.collection("users").document(userId).getDocument { document, error in
-            guard let document = document, document.exists, let favorites = document.get("favorites") as? [String] else {
-                return
-            }
+            guard let document = document, document.exists, let favorites = document.get("favorites") as? [String] else { return }
             
             if favorites.contains(currentTitle) {
                 self.addFavoriteButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
@@ -302,68 +296,68 @@ class FastOrderViewController: UIViewController {
             }
         }
         
-        viewModel.intradayQuoteFetchDatas(with: currentTitle)
-        viewModel.$intradayQuoteDatas.sink { [weak self] quoteData in
-            self?.fastOrderNameLabel.text = "\(quoteData?.name ?? "---")"
-            self?.fastOrderPriceLabel.text = "\(quoteData?.closePrice ?? 0.0)"
-            
-            if let firstPart = quoteData?.change, firstPart > 0 {
-                self?.fastOrderIncreasePriceLabel.textColor = .systemRed
-                self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
-            }else if let firstPart = quoteData?.change, firstPart < 0 {
-                self?.fastOrderIncreasePriceLabel.textColor = .systemGreen
-                self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
-            }else {
-                self?.fastOrderIncreasePriceLabel.textColor = .white
-                self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
-            }
-            
-            let volumeAtTotel = (quoteData?.total.tradeVolumeAtBid ?? 0.0) + (quoteData?.total.tradeVolumeAtAsk ?? 0.0)
-            let atBidPercent = (quoteData?.total.tradeVolumeAtBid ?? 0.0) / volumeAtTotel
-            let atAskPercent = (quoteData?.total.tradeVolumeAtAsk ?? 0.0) / volumeAtTotel
-            let atBidPercentFormat = String(format: "%.1f", (atBidPercent * 100))
-            let atAskPercentFormat = String(format: "%.1f", (atAskPercent * 100))
-            
-            self?.inProgressLabel.text = "內盤 \(quoteData?.total.tradeVolumeAtBid ?? 0.0) (\(atBidPercentFormat))"
-            self?.outProgressLabel.text = "外盤 \(quoteData?.total.tradeVolumeAtAsk ?? 0.0) (\(atAskPercentFormat))"
-            
-            //開盤價 最高價 最低價 StackView 子選項配置價格
-            if let fastOrderOTDCPriceStackView = self?.fastOrderOTDCPriceStackView {
-                for (index, oTDCPrice) in fastOrderOTDCPriceStackView.arrangedSubviews.enumerated() {
-                    if let label = oTDCPrice as? UILabel {
-                        switch index {
-                        case 0:
-                            label.text = "\(quoteData?.openPrice ?? 0.0)"
-                        case 1:
-                            label.text = "\(quoteData?.highPrice ?? 0.0)"
-                        default:
-                            label.text = "\(quoteData?.lowPrice ?? 0.0)"
+        stockFetchDatasViewModel.intradayQuoteFetchDatas(with: currentTitle)
+        stockFetchDatasViewModel.$intradayQuoteDatas.receive(on: DispatchQueue.main)
+            .sink { [weak self] quoteData in
+                self?.fastOrderNameLabel.text = "\(quoteData?.name ?? "---")"
+                self?.fastOrderPriceLabel.text = "\(quoteData?.closePrice ?? 0.0)"
+                
+                if let firstPart = quoteData?.change, firstPart > 0 {
+                    self?.fastOrderIncreasePriceLabel.textColor = .systemRed
+                    self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
+                }else if let firstPart = quoteData?.change, firstPart < 0 {
+                    self?.fastOrderIncreasePriceLabel.textColor = .systemGreen
+                    self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
+                }else {
+                    self?.fastOrderIncreasePriceLabel.textColor = .white
+                    self?.fastOrderIncreasePriceLabel.text = "\(quoteData?.change ?? 0.0)(\(quoteData?.changePercent ?? 0.0))"
+                }
+                
+                let volumeAtTotel = (quoteData?.total.tradeVolumeAtBid ?? 0.0) + (quoteData?.total.tradeVolumeAtAsk ?? 0.0)
+                let atBidPercent = (quoteData?.total.tradeVolumeAtBid ?? 0.0) / volumeAtTotel
+                let atAskPercent = (quoteData?.total.tradeVolumeAtAsk ?? 0.0) / volumeAtTotel
+                let atBidPercentFormat = String(format: "%.1f", (atBidPercent * 100))
+                let atAskPercentFormat = String(format: "%.1f", (atAskPercent * 100))
+                
+                self?.inProgressLabel.text = "內盤 \(quoteData?.total.tradeVolumeAtBid ?? 0.0) (\(atBidPercentFormat))"
+                self?.outProgressLabel.text = "外盤 \(quoteData?.total.tradeVolumeAtAsk ?? 0.0) (\(atAskPercentFormat))"
+                
+                //開盤價 最高價 最低價 StackView 子選項配置價格
+                if let fastOrderOTDCPriceStackView = self?.fastOrderOTDCPriceStackView {
+                    for (index, oTDCPrice) in fastOrderOTDCPriceStackView.arrangedSubviews.enumerated() {
+                        if let label = oTDCPrice as? UILabel {
+                            switch index {
+                            case 0:
+                                label.text = "\(quoteData?.openPrice ?? 0.0)"
+                            case 1:
+                                label.text = "\(quoteData?.highPrice ?? 0.0)"
+                            default:
+                                label.text = "\(quoteData?.lowPrice ?? 0.0)"
+                            }
                         }
                     }
                 }
-            }
-            
-            //成交量 均價 成交值 StackView 子選項配置
-            if let fastOrderAVVDataStackView = self?.fastOrderAVVDataStackView {
-                for (index, aVVData) in fastOrderAVVDataStackView.arrangedSubviews.enumerated() {
-                    if let label = aVVData as? UILabel {
-                        switch index {
-                        case 0:
-                            label.text = "\(quoteData?.total.tradeVolume ?? 0.0)"
-                        case 1:
-                            label.text = "\(quoteData?.avgPrice ?? 0.0)"
-                        default:
-                            label.text = "\((quoteData?.total.tradeValue ?? 0.0) / 10000)"
+                
+                //成交量 均價 成交值 StackView 子選項配置
+                if let fastOrderAVVDataStackView = self?.fastOrderAVVDataStackView {
+                    for (index, aVVData) in fastOrderAVVDataStackView.arrangedSubviews.enumerated() {
+                        if let label = aVVData as? UILabel {
+                            switch index {
+                            case 0:
+                                label.text = "\(quoteData?.total.tradeVolume ?? 0.0)"
+                            case 1:
+                                label.text = "\(quoteData?.avgPrice ?? 0.0)"
+                            default:
+                                label.text = "\((quoteData?.total.tradeValue ?? 0.0) / 10000)"
+                            }
                         }
                     }
                 }
+                
+                self?.setLineData()
             }
-            
-            self?.setLineData()
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
-    
     
     private func setLineData() {
         
@@ -375,8 +369,8 @@ class FastOrderViewController: UIViewController {
         self.lineChart.leftAxis.removeAllLimitLines()
         
         guard let currentTitle = self.title else { return }
-        viewModel.intradayCandlesFetchDatas(with: currentTitle, timeframe: "1")
-        viewModel.$intradayCandlesDatas.sink { [weak self] candlesDatas in
+        stockFetchDatasViewModel.intradayCandlesFetchDatas(with: currentTitle, timeframe: "1")
+        stockFetchDatasViewModel.$intradayCandlesDatas.sink { [weak self] candlesDatas in
             
             //重要 清除[]的數據
             entrieDatas.removeAll()
@@ -483,7 +477,7 @@ class FastOrderViewController: UIViewController {
         
         guard let userId = Auth.auth().currentUser?.uid else { return }
         db.collection("users").document(userId).updateData([
-            "favorites": FieldValue.arrayUnion([self.title])
+            "favorites": FieldValue.arrayUnion([self.title!])
         ])
         
     }
@@ -494,9 +488,8 @@ class FastOrderViewController: UIViewController {
         
         guard let userId = Auth.auth().currentUser?.uid else { return }
         db.collection("users").document(userId).updateData([
-            "favorites": FieldValue.arrayRemove([self.title])
+            "favorites": FieldValue.arrayRemove([self.title!])
         ])
-        
     }
     
     // MARK: - UI Setup
@@ -591,8 +584,6 @@ class FastOrderViewController: UIViewController {
             addFavoriteButton.widthAnchor.constraint(equalToConstant: 50),
             addFavoriteButton.bottomAnchor.constraint(equalTo: fastOrderValueView.bottomAnchor, constant: -10)
         ])
-        
     }
 }
-
 // MARK: - Extension

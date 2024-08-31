@@ -11,7 +11,9 @@ import Combine
 class TradeListViewController: UIViewController {
 
     // MARK: - Variables
-    private var tradelist: [String] = []
+    private var viewModel = FirestoreViewModels()
+    
+    private var tradeListArray: [String: [String]] = [:]
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -43,11 +45,15 @@ class TradeListViewController: UIViewController {
     
     // MARK: - Functions
     private func bindView() {
-        PublisherManerger.shared.tradelistPublisher.receive(on: DispatchQueue.main).sink { [weak self] list in
-            self?.tradelist = list
-            self?.tradeListTableView.reloadData()
-        }
-        .store(in: &cancellables)
+        viewModel.fetchFirestoreMainData()
+        viewModel.$mainDatas.receive(on: DispatchQueue.main)
+            .sink { [weak self] dataArray in
+                if let dataArray = dataArray?.list {
+                    self?.tradeListArray = dataArray
+                }
+                self?.tradeListTableView.reloadData()
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Selectors
@@ -58,7 +64,7 @@ class TradeListViewController: UIViewController {
 // MARK: - Extension
 extension TradeListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tradelist.count
+        return tradeListArray.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -66,7 +72,11 @@ extension TradeListViewController: UITableViewDelegate, UITableViewDataSource {
             return UITableViewCell()
         }
         
-        cell.configureTradeListData(with: tradelist[0], listStock: tradelist[1], listBs: tradelist[2], listPrice: tradelist[3])
+        cell.configureTradeListData(
+            with: "\(tradeListArray["\(indexPath.row)"]?[0] ?? "")",
+            listStock: "\(tradeListArray["\(indexPath.row)"]?[1] ?? "").\(tradeListArray["\(indexPath.row)"]?[2] ?? "")",
+            listBs: "\(tradeListArray["\(indexPath.row)"]?[3] ?? "")",
+            listPrice: "\(tradeListArray["\(indexPath.row)"]?[4] ?? "")")
         
         return cell
     }

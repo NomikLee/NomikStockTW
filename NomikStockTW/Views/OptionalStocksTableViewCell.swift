@@ -8,15 +8,10 @@
 import UIKit
 import Combine
 
-protocol CollectionPushOptionalStockDelegate: AnyObject {
-    func pushOptionalStockCollectionCell(_ stockCode: String)
-}
-
 class OptionalStocksTableViewCell: UITableViewCell {
     
     // MARK: - Variables
     static let identifier = "OptionalStocksTableViewCell"
-    weak var delegate: CollectionPushOptionalStockDelegate?
     
     private let firestoreViewModel = FirestoreViewModels()
     private let stockFetchDatasViewModel = StockFetchDatasViewModels()
@@ -47,12 +42,7 @@ class OptionalStocksTableViewCell: UITableViewCell {
         collectionView.dataSource = self
         
         bindView()
-        
-        PublisherManerger.shared.favoriteRefresh.sink { [weak self] in
-           self?.bindView()
-       }
-       .store(in: &cancellables)
-        
+        publisherFN()
     }
     
     required init?(coder: NSCoder) {
@@ -83,12 +73,19 @@ class OptionalStocksTableViewCell: UITableViewCell {
             stockFetchDatasViewModel.favoritesIntradayQuoteFetchDatas(with: symbol)
         }
         
-        stockFetchDatasViewModel.$favoritesIntradayQuoteDatas
-            .receive(on: DispatchQueue.main)
+        stockFetchDatasViewModel.$favoritesIntradayQuoteDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] favoritesQuoteDatas in
                 guard let favoritesData = favoritesQuoteDatas else { return }
                 self?.stockDataDict[favoritesData.symbol] = favoritesQuoteDatas
                 self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func publisherFN() {
+        PublisherManerger.shared.favoriteRefreshPublisher.receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.bindView()
             }
             .store(in: &cancellables)
     }
@@ -122,7 +119,7 @@ extension OptionalStocksTableViewCell: UICollectionViewDelegate, UICollectionVie
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = collectionView.cellForItem(at: indexPath) as? OptionalStocksCollectionViewCell
         if let title = cell?.stockTitleNumLabel.text {
-            delegate?.pushOptionalStockCollectionCell(title)
+            PublisherManerger.shared.pushOptionalStockCollectionCell.send(title)
         }
     }
 }

@@ -8,15 +8,10 @@
 import UIKit
 import Combine
 
-protocol CollectionPushStockRankDelegate: AnyObject {
-    func pushStockRankCollectionCell(_ stockCode: String)
-}
-
 class StocksRankTableViewCell: UITableViewCell {
    
     // MARK: - Variables
     static let identifier = "StocksRankTableViewCell"
-    weak var delegate: CollectionPushStockRankDelegate?
     
     private var stockFetchDatasViewModel = StockFetchDatasViewModels()
     private var selectNum: Int?
@@ -47,6 +42,7 @@ class StocksRankTableViewCell: UITableViewCell {
         bindView()
         
         Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            PublisherManerger.shared.favoriteRefreshPublisher.send()
             self?.bindView()
         }
         
@@ -64,10 +60,11 @@ class StocksRankTableViewCell: UITableViewCell {
     // MARK: - Functions
     private func bindView() {
         stockFetchDatasViewModel.moversUPFetchDatas()
-        stockFetchDatasViewModel.$moversUPDatas.sink { [weak self] _ in
-            self?.collectionView.reloadData()
-        }
-        .store(in: &cancellables)
+        stockFetchDatasViewModel.$moversUPDatas.receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
         
         stockFetchDatasViewModel.moversDOWNFetchDatas()
         stockFetchDatasViewModel.volumeActivesFetchDatas()
@@ -146,7 +143,7 @@ extension StocksRankTableViewCell: UICollectionViewDelegate, UICollectionViewDat
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = collectionView.cellForItem(at: indexPath) as? StocksRankCollectionViewCell
         if let title = cell?.stockTitleNumLabel.text {
-            delegate?.pushStockRankCollectionCell(title)
+            PublisherManerger.shared.pushStockRankCollectionCell.send(title)
         }
     }
 }

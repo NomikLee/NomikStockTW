@@ -15,7 +15,6 @@ enum SelectionType {
 class SelectionBarView: UIView {
     
     // MARK: - Variables
-    
     //didset偵測selectTap變化 i與selectTap比對 TitleColor與isActive 做三元運算 再賦值
     private var selectTap: Int = 0 {
         didSet {
@@ -78,7 +77,6 @@ class SelectionBarView: UIView {
     private func selectButton() {
         for (index, button) in selectionStackView.arrangedSubviews.enumerated() {
             guard let button = button as? UIButton else { return }
-            
             
             if index == selectTap {
                 button.setTitleColor(.label, for: .normal)

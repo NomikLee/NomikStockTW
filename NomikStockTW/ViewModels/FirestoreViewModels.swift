@@ -17,16 +17,18 @@ class FirestoreViewModels: ObservableObject {
     @Published var emailData: String?
     @Published var uploadURL: String? = nil
     @Published var userImage: UIImage? = nil
+    @Published var ImagePath: String?
     
     private var cancellables = Set<AnyCancellable>()
     
     func uploadImage(_ image: UIImage) {
         let path = "images/\(UUID().uuidString).jpg"
-        StorageManager.shared.uploadImage(image, path: path)
+        updateMainImagePath(path)
+        StorageManager.shared.uploadImage(image, path: path).receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 switch completion {
                 case .finished:
-                    break
+                    PublisherManerger.shared.logoImageChangePublisher.send()
                 case .failure(let error):
                     break
                 }
@@ -34,10 +36,27 @@ class FirestoreViewModels: ObservableObject {
                 self?.uploadURL = url
             })
             .store(in: &cancellables)
+        downloadImage(from: path)
+    }
+    
+    private func updateMainImagePath(_ path: String){
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        FirestoreManager.shared.updateImagePath(from: uid, with: path).receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    break
+                }
+            } receiveValue: { [weak self] in
+                print("照片路徑更新完成")
+            }
+            .store(in: &cancellables)
     }
     
     func downloadImage(from path: String) {
-        StorageManager.shared.downloadImage(from: path)
+        StorageManager.shared.downloadImage(from: path).receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 switch completion {
                 case .finished:
@@ -54,7 +73,7 @@ class FirestoreViewModels: ObservableObject {
     }
     
     func fetchUserAuthInfo() {
-        FirestoreManager.shared.userAuthInfo().receive(on: DispatchQueue.main)
+        FirestoreManager.shared.getUserAuthEmail().receive(on: DispatchQueue.main)
             .sink { completion in
                 switch completion {
                 case .finished:
@@ -70,8 +89,7 @@ class FirestoreViewModels: ObservableObject {
         
     func fetchFirestoreMainData() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        FirestoreManager.shared.getMainDocument(from: uid)
-            .receive(on: DispatchQueue.main)
+        FirestoreManager.shared.getMainDocument(from: uid).receive(on: DispatchQueue.main)
             .sink { completion in
                 switch completion {
                 case .finished:
@@ -88,8 +106,10 @@ class FirestoreViewModels: ObservableObject {
                     firstName: data["firstName"] as? String ?? "",
                     lastName: data["lastName"] as? String ?? "",
                     money: data["money"] as? String ?? "",
+                    imagePath: data["imagePath"] as? String ?? "",
                     favorites: data["favorites"] as? [String] ?? [],
-                    treasury: data["treasury"] as? [String: [String]] ?? [:]
+                    treasury: data["treasury"] as? [String: [String]] ?? [:],
+                    list: data["list"] as? [String: [String]] ?? [:]
                 )
             }
             .store(in: &cancellables)
@@ -97,8 +117,7 @@ class FirestoreViewModels: ObservableObject {
     
     func updateTreasuryData(with treasuryData: [String: [String]]) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        FirestoreManager.shared.updateMainDocument(from: uid, with: treasuryData)
-            .receive(on: DispatchQueue.main)
+        FirestoreManager.shared.updateTreasury(from: uid, with: treasuryData).receive(on: DispatchQueue.main)
             .sink { completion in
                 switch completion {
                 case .finished:
@@ -107,7 +126,23 @@ class FirestoreViewModels: ObservableObject {
                     print(error.localizedDescription)
                 }
             } receiveValue: { _ in
-                print("更新完成")
+                print("Treasury更新完成")
+            }
+            .store(in: &cancellables)
+    }
+    
+    func updateListData(with listData: [String: [String]]) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        FirestoreManager.shared.updateList(from: uid, with: listData).receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            } receiveValue: { _ in
+                print("List更新完成")
             }
             .store(in: &cancellables)
     }

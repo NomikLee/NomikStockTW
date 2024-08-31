@@ -252,25 +252,28 @@ class RegisterViewController: UIViewController {
         firstNameTextView.addTarget(self, action: #selector(didChangeFirstNameField), for: .editingChanged)
         lastNameTextView.addTarget(self, action: #selector(didChangeLastNameField), for: .editingChanged)
         
-        viewModel.$isAuthValid.sink { [weak self] valid in
-            self?.confirmButton.isEnabled = valid
-        }
-        .store(in: &cancellables)
+        viewModel.$isAuthValid.receive(on: DispatchQueue.main)
+            .sink { [weak self] valid in
+                self?.confirmButton.isEnabled = valid
+            }
+            .store(in: &cancellables)
         
         //當創造一個帳號後user不為nil檢查 navigationController 的 viewControllers 組中的第一個viewController是否為 StartedViewController是的話刪除
-        viewModel.$user.sink { [weak self] user in
-            guard user != nil else { return }
-            let loadVC = UINavigationController(rootViewController: ReloadViewController())
-            loadVC.modalPresentationStyle = .fullScreen
-            self?.present(loadVC, animated: false)
-        }
-        .store(in: &cancellables)
+        viewModel.$user.receive(on: DispatchQueue.main)
+            .sink { [weak self] user in
+                guard user != nil else { return }
+                let loadVC = UINavigationController(rootViewController: ReloadViewController())
+                loadVC.modalPresentationStyle = .fullScreen
+                self?.present(loadVC, animated: false)
+            }
+            .store(in: &cancellables)
         
-        viewModel.$error.sink { [weak self] errorString in
-            guard let error = errorString else { return }
-            self?.errorAlert(error)
-        }
-        .store(in: &cancellables)
+        viewModel.$error.receive(on: DispatchQueue.main)
+            .sink { [weak self] errorString in
+                guard let error = errorString else { return }
+                self?.errorAlert(error)
+            }
+            .store(in: &cancellables)
     }
     
     private func errorAlert(_ error: String) {
@@ -279,7 +282,6 @@ class RegisterViewController: UIViewController {
         alert.addAction(okButton)
         present(alert, animated: true)
     }
-    
     
     // MARK: - Selectors
     @objc private func didChangeLastNameField() {
@@ -404,9 +406,7 @@ class RegisterViewController: UIViewController {
             confirmButton.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
-
 }
-
 
 // MARK: - Extension
 extension RegisterViewController: UIPickerViewDelegate, UIPickerViewDataSource {

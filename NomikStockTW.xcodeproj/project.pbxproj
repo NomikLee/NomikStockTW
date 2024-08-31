@@ -302,15 +302,15 @@
 		6F562D822C34DAE50083ACE3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				6F7677922C808342005DAAB0 /* TradeHeaderView.swift */,
 				6F562D982C34FA450083ACE3 /* HomeHeaderView.swift */,
 				6F2665E82C3BB57700557816 /* SelectionBarView.swift */,
+				6F7677902C806AA3005DAAB0 /* TradeListTableViewCell.swift */,
+				6F57C8732C6C5690002C4692 /* InventoryCollectionViewCell.swift */,
 				6F49A3BB2C368CBF00DBD3D9 /* OptionalStocksTableViewCell.swift */,
 				6F49A3BD2C3793F600DBD3D9 /* OptionalStocksCollectionViewCell.swift */,
 				6F49A3C12C37B2B200DBD3D9 /* StocksRankTableViewCell.swift */,
 				6F49A3BF2C37B02F00DBD3D9 /* StocksRankCollectionViewCell.swift */,
-				6F57C8732C6C5690002C4692 /* InventoryCollectionViewCell.swift */,
-				6F7677922C808342005DAAB0 /* TradeHeaderView.swift */,
-				6F7677902C806AA3005DAAB0 /* TradeListTableViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -328,11 +328,11 @@
 		6F562D842C34DAFD0083ACE3 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
-				6F7677972C81A10B005DAAB0 /* StorageManerger.swift */,
 				6F562D872C34DBD20083ACE3 /* APIConstants.swift */,
 				6F562D892C34DD9C0083ACE3 /* APIServiceManerger.swift */,
 				6F9B20432C56009E00A01BBF /* AuthManerger.swift */,
 				6F685CE82C5CCB7100C1D8EB /* FirestoreManager.swift */,
+				6F7677972C81A10B005DAAB0 /* StorageManerger.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";

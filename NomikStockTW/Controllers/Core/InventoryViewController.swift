@@ -11,10 +11,9 @@ import Combine
 class InventoryViewController: UIViewController {
     
     // MARK: - Variables
-    var addData: [Double] = []
-    var dataArray: [String: [String]] = [:]
-    
     private let viewModel = FirestoreViewModels()
+    
+    private var dataArray: [String: [String]] = [:]
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
@@ -98,7 +97,7 @@ class InventoryViewController: UIViewController {
     private let totelLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "2000950 元"
+        label.text = "------- 元"
         return label
     }()
     
@@ -175,6 +174,7 @@ class InventoryViewController: UIViewController {
         viewModel.fetchFirestoreMainData()
         viewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] data in
+                self?.totelLabel.text = data?.money
                 if let dataArrays = data?.treasury {
                     self?.dataArray = dataArrays
                 }
@@ -272,7 +272,6 @@ class InventoryViewController: UIViewController {
             availableFundsLabel.topAnchor.constraint(equalTo: availableTitle.topAnchor),
             availableFundsLabel.trailingAnchor.constraint(equalTo: totelView.trailingAnchor),
             availableFundsLabel.heightAnchor.constraint(equalToConstant: 15),
-            
         ])
     }
 }
@@ -280,7 +279,7 @@ class InventoryViewController: UIViewController {
 // MARK: - Extension
 extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return (viewModel.mainDatas?.treasury.count ?? 0) + 1
+        return dataArray.count + 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

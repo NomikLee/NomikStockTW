@@ -14,6 +14,8 @@ struct UserProfileModels: Codable {
     let firstName: String
     let lastName: String
     let money: String
+    let imagePath: String
     let favorites: [String]
     let treasury: [String: [String]]
+    let list: [String: [String]]
 }

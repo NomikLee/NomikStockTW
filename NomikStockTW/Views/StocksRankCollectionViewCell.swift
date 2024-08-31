@@ -11,7 +11,6 @@ class StocksRankCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Variables
     static let identifier = "StocksRankCollectionViewCell"
-    private var viewModel = StockFetchDatasViewModels()
     
     // MARK: - UI Components
     private var stockTitleNameLabel: UILabel = {
