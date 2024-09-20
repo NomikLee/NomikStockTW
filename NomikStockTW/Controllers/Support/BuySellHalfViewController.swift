@@ -147,7 +147,7 @@ class BuySellHalfViewController: UIViewController {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let nowDay = dateFormatter.string(from: Date())
         
-        print("\(nowDay) 購買了\(self.symbol!) \(self.stockName!) +\(stockNumTextField.text!) 股 \(self.stockPrice!)")
+//        print("\(nowDay) 購買了\(self.symbol!) \(self.stockName!) +\(stockNumTextField.text!) 股 \(self.stockPrice!)")
         
         let updateBuyData = [
             "": ["\(self.symbol!)", "\(self.stockName!)", "+\(stockNumTextField.text!)", "\(self.stockPrice!)"],
@@ -159,6 +159,14 @@ class BuySellHalfViewController: UIViewController {
         
         firestoreViewModel.updateListData(with: updateListBuyData)
         firestoreViewModel.updateTreasuryData(with: updateBuyData)
+        
+        let alertController = UIAlertController(title: "購買完成", message: "\(nowDay) 購買了\(self.symbol!) \(self.stockName!) +\(stockNumTextField.text!) 股 \(self.stockPrice!)", preferredStyle: .alert)
+            
+        let confirm = UIAlertAction(title: "確認", style: .default) { _ in
+        }
+        alertController.addAction(confirm)
+        
+        present(alertController, animated: true, completion: nil)
     }
     
     @objc func TapSell() {
@@ -166,7 +174,7 @@ class BuySellHalfViewController: UIViewController {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let nowDay = dateFormatter.string(from: Date())
         
-        print("購買了\(self.symbol!) \(self.stockName!) -\(stockNumTextField.text!) 股 \(self.stockPrice!)")
+//        print("購買了\(self.symbol!) \(self.stockName!) -\(stockNumTextField.text!) 股 \(self.stockPrice!)")
         
         let updateSellData = [
             "": ["\(self.symbol!)", "\(self.stockName!)", "-\(stockNumTextField.text!)", "\(self.stockPrice!)"],
@@ -178,6 +186,14 @@ class BuySellHalfViewController: UIViewController {
         
         firestoreViewModel.updateListData(with: updateListBuyData)
         firestoreViewModel.updateTreasuryData(with: updateSellData)
+        
+        let alertController = UIAlertController(title: "賣出完成", message: "購買了\(self.symbol!) \(self.stockName!) -\(stockNumTextField.text!) 股 \(self.stockPrice!)", preferredStyle: .alert)
+            
+        let confirm = UIAlertAction(title: "確認", style: .default) { _ in
+        }
+        alertController.addAction(confirm)
+        
+        present(alertController, animated: true, completion: nil)
     }
     
     // MARK: - UI Setup
