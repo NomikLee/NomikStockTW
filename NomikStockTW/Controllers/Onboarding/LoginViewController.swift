@@ -11,7 +11,7 @@ import Combine
 class LoginViewController: UIViewController {
 
     // MARK: - Variables
-    private let viewModel = AuthViewModels()
+    private let authViewModel = AuthViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -109,13 +109,14 @@ class LoginViewController: UIViewController {
         loginEmailTextView.addTarget(self, action: #selector(didChangeLoginEmailField), for: .editingChanged)
         loginPasswordTextView.addTarget(self, action: #selector(didChangeLoginPasswordField), for: .editingChanged)
         
-        viewModel.$isAuthValid.sink { [weak self] valid in
-            self?.loginButton.isEnabled = valid
-        }
-        .store(in: &cancellables)
+        authViewModel.$isAuthValid.receive(on: DispatchQueue.main)
+            .sink { [weak self] valid in
+                self?.loginButton.isEnabled = valid
+            }
+            .store(in: &cancellables)
         
         //當創造一個帳號後user不為nil檢查 navigationController 的 viewControllers 組中的第一個viewController是否為 StartedViewController是的話刪除
-        viewModel.$user.receive(on: DispatchQueue.main)
+        authViewModel.$user.receive(on: DispatchQueue.main)
             .sink { [weak self] user in
                 guard user != nil else { return }
                 let loadVC = UINavigationController(rootViewController: ReloadViewController())
@@ -124,7 +125,7 @@ class LoginViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$error.receive(on: DispatchQueue.main)
+        authViewModel.$error.receive(on: DispatchQueue.main)
             .sink { [weak self] errorString in
                 guard let error = errorString else { return }
                 self?.errorAlert(error)
@@ -141,17 +142,17 @@ class LoginViewController: UIViewController {
     
     // MARK: - Selectors
     @objc private func didChangeLoginPasswordField() {
-        viewModel.passwordText = loginPasswordTextView.text
-        viewModel.checkLoginAuthText()
+        authViewModel.passwordText = loginPasswordTextView.text
+        authViewModel.checkLoginAuthText()
     }
     
     @objc private func didChangeLoginEmailField() {
-        viewModel.emailText = loginEmailTextView.text
-        viewModel.checkLoginAuthText()
+        authViewModel.emailText = loginEmailTextView.text
+        authViewModel.checkLoginAuthText()
     }
     
     @objc private func didTapLogin() {
-        viewModel.loginUser()
+        authViewModel.loginUser()
     }
     
     @objc private func dismissKeyboard() {
@@ -187,6 +188,5 @@ class LoginViewController: UIViewController {
             loginButton.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
-    // MARK: - Extension
-
 }
+// MARK: - Extension

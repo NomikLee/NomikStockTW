@@ -78,7 +78,6 @@ class InventoryCollectionViewCell: UICollectionViewCell {
         super.prepareForReuse()
     }
     
-    
     // MARK: - Functions
     public func configureInventoryData(with stock: String, stockName: String, stockNum: String, stockCost: String, StockProfitLoss: String) {
         self.inventoryStockLabel.text = stock

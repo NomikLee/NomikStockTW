@@ -12,9 +12,7 @@ import FirebaseAuth
 class HomeViewController: UIViewController, UINavigationControllerDelegate {
     
     // MARK: - Variables
-    private let homeTitleName: [String] = ["自選股", "上漲排行"]
     private let selectionBarView = SelectionBarView()
-    private var viewModel = FirestoreViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -40,7 +38,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
         homeTableView.refreshControl = refreshControl
         
         //Header畫面
-        let homeHeaderView = HomeHeaderView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 240))
+        let homeHeaderView = HomeHeaderView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 160))
         homeTableView.tableHeaderView = homeHeaderView
         
         publisherFN()
@@ -68,7 +66,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     }
     
     private func publisherFN(){
-        PublisherManerger.shared.logoutButtonTapPublisher.receive(on: DispatchQueue.main)
+        PublisherManerger.shared.signOutButtonTapPublisher
             .sink { [weak self] in
                 try? Auth.auth().signOut()
                 self?.checkCurrentUser()
@@ -76,7 +74,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             .store(in: &cancellables)
         
         
-        PublisherManerger.shared.userHeaderImageTapPublisher.receive(on: DispatchQueue.main)
+        PublisherManerger.shared.userHeaderImageTapPublisher
             .sink { [weak self] in
                 let userSettingVC = UserSettingViewController()
                 userSettingVC.modalPresentationStyle = .automatic
@@ -84,19 +82,19 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
             }
             .store(in: &cancellables)
         
-        PublisherManerger.shared.pushOptionalStockCollectionCell.receive(on: DispatchQueue.main)
+        PublisherManerger.shared.pushOptionalStockCollectionCell
             .sink { [weak self] stockCode in
-                let vc = FastOrderViewController()
-                vc.title = stockCode
-                self?.navigationController?.pushViewController(vc, animated: true)
+                let fastOrderVC = FastOrderViewController()
+                fastOrderVC.title = stockCode
+                self?.navigationController?.pushViewController(fastOrderVC, animated: true)
             }
             .store(in: &cancellables)
         
-        PublisherManerger.shared.pushStockRankCollectionCell.receive(on: DispatchQueue.main)
+        PublisherManerger.shared.pushStockRankCollectionCell
             .sink { [weak self] stockCode in
-                let vc = FastOrderViewController()
-                vc.title = stockCode
-                self?.navigationController?.pushViewController(vc, animated: true)
+                let fastOrderVC = FastOrderViewController()
+                fastOrderVC.title = stockCode
+                self?.navigationController?.pushViewController(fastOrderVC, animated: true)
             }
             .store(in: &cancellables)
     }
@@ -104,6 +102,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
     // MARK: - Selectors
     @objc private func refreshData() {
         PublisherManerger.shared.favoriteRefreshPublisher.send()
+        PublisherManerger.shared.updateTotelMoneyPublisher.send()
         homeTableView.reloadData()
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             self?.homeTableView.refreshControl?.endRefreshing()
@@ -116,7 +115,7 @@ class HomeViewController: UIViewController, UINavigationControllerDelegate {
 // MARK: - Extension
 extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return homeTitleName.count
+        return 2
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -141,7 +140,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
         default:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: StocksRankTableViewCell.identifier, for: indexPath) as? StocksRankTableViewCell else { return UITableViewCell() }
             
-            PublisherManerger.shared.selectionPublisher.receive(on: DispatchQueue.main)
+            PublisherManerger.shared.selectionPublisher
                 .sink { [weak self] selection in
                     switch selection {
                     case .up:

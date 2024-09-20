@@ -65,7 +65,6 @@ class StocksRankCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(stockIncreasePriceLabel)
         
         configureUI()
-        
     }
     
     required init?(coder: NSCoder) {

@@ -14,7 +14,6 @@ struct APIServiceManerger {
     static let shared = APIServiceManerger()
     
     // MARK: - Functions
-    
     //Get上漲排行數據
     func getSnapshotUPMovers() -> AnyPublisher<SnapshotRankModels, Error> {
         var urlComponents = URLComponents(string: APIConstants.baseURL + Endpoints.snapshotMovers.valueEndpoints())
@@ -161,6 +160,22 @@ struct APIServiceManerger {
         
         return URLSession.shared.dataTaskPublisher(for: request)
             .map { $0.data }
+            .decode(type: IntradayQuoteModels.self, decoder: JSONDecoder())
+            .mapError { error in
+                return error as? URLError ?? URLError(.unknown)
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    //Get賺賠即時數據
+    func getProfitAndLossQuote(symbol: String) -> AnyPublisher<IntradayQuoteModels, Error> {
+        let url = URL(string: APIConstants.baseURL + Endpoints.intradayQuote(symbol).valueEndpoints())
+        
+        var request = URLRequest(url: url!)
+        request.setValue(APIConstants.apiKey, forHTTPHeaderField: Header.apiKey.rawValue)
+        
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map{ $0.data }
             .decode(type: IntradayQuoteModels.self, decoder: JSONDecoder())
             .mapError { error in
                 return error as? URLError ?? URLError(.unknown)

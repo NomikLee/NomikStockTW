@@ -32,23 +32,6 @@ class BuySellHalfViewController: UIViewController {
         return label
     }()
     
-    private let switchCurrentButton: UISwitch = {
-        let sw = UISwitch()
-        sw.translatesAutoresizingMaskIntoConstraints = false
-        sw.isOn = false
-        return sw
-    }()
-    
-    private let currentTitleLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "一鍵全買"
-        label.font = .systemFont(ofSize: 20, weight: .semibold)
-        label.textColor = .systemOrange
-        label.textAlignment = .center
-        return label
-    }()
-    
     private let stockNumTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -121,14 +104,11 @@ class BuySellHalfViewController: UIViewController {
         view.addSubview(buySellTitleContainer)
         buySellTitleContainer.layer.addSublayer(gradientLayer)
         buySellTitleContainer.addSubview(buySellTitle)
-        view.addSubview(switchCurrentButton)
-        view.addSubview(currentTitleLabel)
         view.addSubview(stockNumTextField)
         view.addSubview(numStockLabel)
         
         configureUI()
         configureFN()
-        
     }
     
     override func viewDidLayoutSubviews() {
@@ -213,16 +193,6 @@ class BuySellHalfViewController: UIViewController {
             buySellTitle.trailingAnchor.constraint(equalTo: buySellTitleContainer.trailingAnchor),
             buySellTitle.bottomAnchor.constraint(equalTo: buySellTitleContainer.bottomAnchor),
             
-            switchCurrentButton.bottomAnchor.constraint(equalTo: stockNumTextField.topAnchor, constant: -15),
-            switchCurrentButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 50),
-            switchCurrentButton.heightAnchor.constraint(equalToConstant: 40),
-            switchCurrentButton.widthAnchor.constraint(equalToConstant: 50),
-            
-            currentTitleLabel.bottomAnchor.constraint(equalTo: stockNumTextField.topAnchor, constant: -20),
-            currentTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -30),
-            currentTitleLabel.widthAnchor.constraint(equalToConstant: 100),
-            currentTitleLabel.heightAnchor.constraint(equalToConstant: 40),
-            
             stepNum.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             stepNum.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 50),
             
@@ -240,7 +210,6 @@ class BuySellHalfViewController: UIViewController {
             buySellButton.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             buySellButton.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             buySellButton.heightAnchor.constraint(equalToConstant: 100)
-            
         ])
     }
 }

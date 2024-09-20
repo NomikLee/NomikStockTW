@@ -11,9 +11,17 @@ import Combine
 class InventoryViewController: UIViewController {
     
     // MARK: - Variables
-    private let viewModel = FirestoreViewModels()
+    private let firestoreViewModel = FirestoreViewModels()
+    private let stockFetchDatasViewModel = StockFetchDatasViewModels()
     
-    private var dataArray: [String: [String]] = [:]
+    private var stockTotel: Double = 0.0
+    private var profitAndLossTotal: Double = 0.0
+    
+    private var profitLossNum: [String : Double] = [:]
+    private var profitAndLoss: [String : String] = [:]
+    private var profitLossCost: [String : Double] = [:]
+    private var treasuryDataArrays: [String: [String]] = [:]
+    private var listDataArrays: [String: [String]] = [:]
     private var cancellables: Set<AnyCancellable> = []
     
     // MARK: - UI Components
@@ -70,7 +78,7 @@ class InventoryViewController: UIViewController {
     private let titleProfitLossLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "賺賠"
+        label.text = "現價"
         label.font = .systemFont(ofSize: 25, weight: .bold)
         label.textAlignment = .center
         return label
@@ -86,15 +94,15 @@ class InventoryViewController: UIViewController {
         return view
     }()
     
-    private let totelTitle: UILabel = {
+    private let inStockTotelTitle: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "總共資金: "
+        label.text = "庫存賺賠: "
         label.textColor = .systemBlue
         return label
     }()
     
-    private let totelLabel: UILabel = {
+    private let inStockTotelLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "------- 元"
@@ -104,7 +112,7 @@ class InventoryViewController: UIViewController {
     private let stockValueTitle: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "股票價值: "
+        label.text = "花費成本: "
         label.textColor = .systemBlue
         return label
     }()
@@ -112,7 +120,7 @@ class InventoryViewController: UIViewController {
     private let stockValueLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "180950 元"
+        label.text = "------- 元"
         return label
     }()
     
@@ -127,7 +135,7 @@ class InventoryViewController: UIViewController {
     private let availableFundsLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "1820000 元"
+        label.text = "------- 元"
         return label
     }()
     
@@ -143,8 +151,8 @@ class InventoryViewController: UIViewController {
         titleView.addSubview(titleStockNumLabel)
         titleView.addSubview(titleCostLabel)
         titleView.addSubview(titleProfitLossLabel)
-        totelView.addSubview(totelTitle)
-        totelView.addSubview(totelLabel)
+        totelView.addSubview(inStockTotelTitle)
+        totelView.addSubview(inStockTotelLabel)
         totelView.addSubview(stockValueTitle)
         totelView.addSubview(stockValueLabel)
         totelView.addSubview(availableTitle)
@@ -161,7 +169,6 @@ class InventoryViewController: UIViewController {
         
         configureUI()
         bindView()
-        
     }
     
     override func viewDidLayoutSubviews() {
@@ -171,32 +178,106 @@ class InventoryViewController: UIViewController {
     
     // MARK: - Functions
     private func bindView(){
-        viewModel.fetchFirestoreMainData()
-        viewModel.$mainDatas.receive(on: DispatchQueue.main)
-            .sink { [weak self] data in
-                self?.totelLabel.text = data?.money
-                if let dataArrays = data?.treasury {
-                    self?.dataArray = dataArrays
+        
+        if cancellables.isEmpty {
+            firestoreViewModel.fetchFirestoreMainData()
+            firestoreViewModel.$mainDatas.receive(on: DispatchQueue.main)
+                .sink { [weak self] datas in
+                    guard let treasurys = datas?.treasury, let listDatas = datas?.list, let moneys = datas?.money else { return }
+                    
+                    let filterTreasurys = treasurys.filter { !$0.value.contains("0") }
+                    let filterZeroTreasurys = Array(treasurys.filter { $0.value.contains("0") }.values)
+                    var filterZeroLists = []
+                    
+                    for i in filterZeroTreasurys {
+                        filterZeroLists.append(i[0])
+                    }
+                    
+                    let filterlistDatas = listDatas.filter { listData in
+                        !filterZeroLists.contains { filterZeroList in
+                            listData.value.contains("\(filterZeroList)")
+                        }
+                    }
+                    
+                    self?.treasuryDataArrays = filterTreasurys
+                    self?.listDataArrays = filterlistDatas
+                    
+                    
+                    if let values = self?.listDataArrays.values {
+                        let reArrays = Set(values.map{ $0[1] })
+                        self?.stockFetchDatasViewModel.profitAndLossQuoteFetchDatas(with: Array(reArrays))
+                        for reArray in reArrays {
+                            self?.stockTotel = 0.0
+                            if let singleValue = self?.listDataArrays.filter{ $0.value[1] == "\(reArray)" } {
+                                let date = singleValue.values.map{ $0[0] }
+                                let stockCode = singleValue.values.map{ $0[1] }
+                                let buySellNum = singleValue.values.map{ $0[3] }.compactMap{ Double($0)}
+                                let buySellPrice = singleValue.values.map{ $0[4] }.compactMap{ Double($0)}
+                                
+                                self?.profitLossNum[stockCode[0]] = buySellNum.reduce(0.0){ $0 + $1 }
+                                
+                                for (num, price) in zip(buySellNum, buySellPrice) {
+                                    self!.stockTotel += num * price
+                                }
+                                self?.profitLossCost[stockCode[0]] = self!.stockTotel
+                            }
+                        }
+                        
+                        guard let profitLossCosts = self?.profitLossCost else { return }
+                        let cost = profitLossCosts.values.map{ abs($0) }.reduce(0.0){ $0 + $1 }
+                        self?.stockValueLabel.text = "\(cost)"
+                        self?.availableFundsLabel.text = "\(Double(moneys)! - cost)"
+                        self?.calculateTotal()
+                    }
+                    self?.inventoryCollectionView.reloadData()
                 }
-                self?.inventoryCollectionView.reloadData()
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
+            
+            stockFetchDatasViewModel.$profitAndLossQuoteDatas.receive(on: DispatchQueue.main)
+                .sink { [weak self] datas in
+                    guard let closePrice = datas?.closePrice, let symbol = datas?.symbol else { return }
+
+                    self?.profitAndLoss["\(symbol)"] = "\(closePrice)"
+                    guard let pLN = self?.profitLossNum["\(symbol)"],
+                            let pAL = self?.profitAndLoss["\(symbol)"],
+                                let pLC = self?.profitLossCost else { return }
+                    
+                    self?.profitAndLossTotal += pLN * Double(pAL)!
+                    self?.inStockTotelLabel.text = "\(self!.profitAndLossTotal - pLC.values.reduce(0.0){ $0 + $1 })"
+                    self?.calculateTotal()
+                    self?.inventoryCollectionView.reloadData()
+                }
+                .store(in: &cancellables)
+        }
+    }
+    
+    private func calculateTotal() {
+        guard let inStockTotalText = inStockTotelLabel.text,
+              let availableFundsText = availableFundsLabel.text,
+              let stockValueText = stockValueLabel.text,
+                let inStockTotal = Double(inStockTotalText),
+                let availableFunds = Double(availableFundsText),
+                let stockValue = Double(stockValueText) else { return }
+            
+            
+        var totalMoney = Int(inStockTotal + availableFunds + stockValue)
+        
+        firestoreViewModel.updateMoneyData(with: "\(totalMoney)")
+
     }
     
     // MARK: - Selectors
     @objc private func reroadTapped() {
-        cancellables.forEach { $0.cancel() }  // 清理現有的訂閱
-        cancellables.removeAll()
         
-        viewModel.fetchFirestoreMainData()
-        viewModel.$mainDatas.receive(on: DispatchQueue.main)
-            .sink { [weak self] data in
-                if let dataArrays = data?.treasury {
-                    self?.dataArray = dataArrays
-                }
-                self?.inventoryCollectionView.reloadData()
-            }
-            .store(in: &cancellables)
+        stockTotel = 0.0
+        profitAndLossTotal = 0.0
+        profitLossNum.removeAll()
+        profitAndLoss.removeAll()
+        profitLossCost.removeAll()
+        treasuryDataArrays.removeAll()
+        listDataArrays.removeAll()
+        
+        firestoreViewModel.fetchFirestoreMainData()
     }
     
     @objc private func tradeListTapped() {
@@ -243,18 +324,18 @@ class InventoryViewController: UIViewController {
             totelView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             totelView.heightAnchor.constraint(equalToConstant: 150),
             
-            totelTitle.leadingAnchor.constraint(equalTo: totelView.leadingAnchor, constant: 40),
-            totelTitle.topAnchor.constraint(equalTo: totelView.topAnchor, constant: 25),
-            totelTitle.widthAnchor.constraint(equalToConstant: 100),
-            totelTitle.heightAnchor.constraint(equalToConstant: 15),
+            inStockTotelTitle.leadingAnchor.constraint(equalTo: totelView.leadingAnchor, constant: 40),
+            inStockTotelTitle.topAnchor.constraint(equalTo: totelView.topAnchor, constant: 25),
+            inStockTotelTitle.widthAnchor.constraint(equalToConstant: 100),
+            inStockTotelTitle.heightAnchor.constraint(equalToConstant: 15),
             
-            totelLabel.leadingAnchor.constraint(equalTo: totelTitle.trailingAnchor),
-            totelLabel.topAnchor.constraint(equalTo: totelTitle.topAnchor),
-            totelLabel.trailingAnchor.constraint(equalTo: totelView.trailingAnchor),
-            totelLabel.heightAnchor.constraint(equalToConstant: 15),
+            inStockTotelLabel.leadingAnchor.constraint(equalTo: inStockTotelTitle.trailingAnchor),
+            inStockTotelLabel.topAnchor.constraint(equalTo: inStockTotelTitle.topAnchor),
+            inStockTotelLabel.trailingAnchor.constraint(equalTo: totelView.trailingAnchor),
+            inStockTotelLabel.heightAnchor.constraint(equalToConstant: 15),
             
-            stockValueTitle.leadingAnchor.constraint(equalTo: totelTitle.leadingAnchor),
-            stockValueTitle.topAnchor.constraint(equalTo: totelTitle.bottomAnchor, constant: 25),
+            stockValueTitle.leadingAnchor.constraint(equalTo: inStockTotelTitle.leadingAnchor),
+            stockValueTitle.topAnchor.constraint(equalTo: inStockTotelTitle.bottomAnchor, constant: 25),
             stockValueTitle.widthAnchor.constraint(equalToConstant: 100),
             stockValueTitle.heightAnchor.constraint(equalToConstant: 15),
             
@@ -279,7 +360,7 @@ class InventoryViewController: UIViewController {
 // MARK: - Extension
 extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataArray.count + 1
+        return treasuryDataArrays.count + 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -295,12 +376,15 @@ extension InventoryViewController: UICollectionViewDelegate, UICollectionViewDat
         default:
             cell.isHidden = false
             cell.backgroundColor = .secondaryLabel
+            
+            let treasuryArray = Array(self.treasuryDataArrays.values)
+            
             cell.configureInventoryData(
-                with: dataArray["\(indexPath.row)"]?[0] ?? "",
-                stockName: dataArray["\(indexPath.row)"]?[1] ?? "",
-                stockNum: dataArray["\(indexPath.row)"]?[2] ?? "",
-                stockCost: dataArray["\(indexPath.row)"]?[3] ?? "",
-                StockProfitLoss: "111")
+                with: treasuryArray[indexPath.row - 1][0],
+                stockName: treasuryArray[indexPath.row - 1][1],
+                stockNum: treasuryArray[indexPath.row - 1][2],
+                stockCost: "\(self.profitLossCost["\(treasuryArray[indexPath.row - 1][0])"] ?? 0.0)",
+                StockProfitLoss: self.profitAndLoss[treasuryArray[indexPath.row - 1][0]] ?? "")
         }
         return cell
     }

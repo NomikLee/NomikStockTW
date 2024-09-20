@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import FirebaseFirestore
 import Combine
 import FirebaseAuth
+import FirebaseFirestore
 
 class FirestoreManager {
     
@@ -70,13 +70,20 @@ class FirestoreManager {
                 for (_, value) in treasuryData {
                     for (key, data) in existingDatas where data[0] == value[0] {
                         existingDatas[key]?[2] = "\(Int(value[2])! + Int(data[2])!)"
+                        if existingDatas[key]?[2] == "0" {
+                            print("刪除")
+                        }
                         break
                     }
                     
                     let flatNumbers = existingDatas.filter{ $0.value.contains(value[0]) }
-                    if flatNumbers == [:] {
-                        var addkey = Int(existingDatas.keys.sorted().last!)
-                        existingDatas["\(addkey! + 1)"] = value
+                    if flatNumbers == [:]  {
+                        let addkey = Int(existingDatas.keys.sorted().last ?? "")
+                        if addkey == nil {
+                            existingDatas["1"] = value
+                        } else {
+                            existingDatas["\(addkey! + 1)"] = value
+                        }
                     }
                 }
     
@@ -101,10 +108,14 @@ class FirestoreManager {
                 }
                 
                 var existingListDatas = doc?.data()?["list"] as? [String: [String]] ?? [:]
-                
                 for (_, value) in listData {
-                    var addkey = Int(existingListDatas.keys.sorted().last!)
-                    existingListDatas["\(addkey! + 1)"] = value
+                    let addkey = Int(existingListDatas.keys.sorted().last ?? "")
+                    if addkey == nil || addkey == 0 {
+                        existingListDatas["0"] = value
+                    }else {
+                        let addnum = (addkey ?? 0) + 1
+                        existingListDatas["\(addnum)"] = value
+                    }
                     
                     self.db.collection("users").document(documentID).setData(["list": existingListDatas], merge: true) { error in
                         if let error = error {
@@ -115,6 +126,20 @@ class FirestoreManager {
                     }
                 }
             }
+        }
+        .eraseToAnyPublisher()
+    }
+    
+    //更新總資產
+    func updateMoney(from documentID: String, money: String) -> AnyPublisher<Void, Error> {
+        return Future { promise in
+                self.db.collection("users").document(documentID).setData(["money": money], merge: true) { error in
+                    if let error = error {
+                        promise(.failure(error))
+                    } else {
+                        promise(.success(()))
+                    }
+                }
         }
         .eraseToAnyPublisher()
     }

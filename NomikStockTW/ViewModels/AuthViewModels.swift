@@ -60,32 +60,34 @@ final class AuthViewModels: ObservableObject {
               let firstName = firstNameText,
               let lastName = lastNameText else { return }
         
-        AuthManager.shared.registerUser(with: email, password: password, gender: gender, birthday: birthday, firstName: firstName, lastName: lastName).sink { [weak self] resultError in
-            switch resultError {
-            case .failure(let error):
-                self?.error = error.localizedDescription
-            case .finished:
-                break
-            }
-        } receiveValue: { [weak self] user in
-            self?.user = user
-        }
-        .store(in: &cancellables)
+        AuthManager.shared.registerUser(with: email, password: password, gender: gender, birthday: birthday, firstName: firstName, lastName: lastName).receive(on: DispatchQueue.main)
+                .sink { [weak self] resultError in
+                    switch resultError {
+                    case .failure(let error):
+                        self?.error = error.localizedDescription
+                    case .finished:
+                        break
+                    }
+                } receiveValue: { [weak self] user in
+                    self?.user = user
+                }
+                .store(in: &cancellables)
     }
     
     func loginUser() {
         guard let email = emailText, let password = passwordText else { return }
         
-        AuthManager.shared.loginUser(with: email, password: password).sink { [weak self] resultError in
-            switch resultError {
-            case .finished:
-                break
-            case .failure(let error):
-                self?.error = error.localizedDescription
+        AuthManager.shared.loginUser(with: email, password: password).receive(on: DispatchQueue.main)
+            .sink { [weak self] resultError in
+                switch resultError {
+                case .finished:
+                    break
+                case .failure(let error):
+                    self?.error = error.localizedDescription
+                }
+            } receiveValue: { [weak self] user in
+                self?.user = user
             }
-        } receiveValue: { [weak self] user in
-            self?.user = user
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
 }

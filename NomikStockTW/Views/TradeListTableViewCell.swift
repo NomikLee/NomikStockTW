@@ -66,7 +66,6 @@ class TradeListTableViewCell: UITableViewCell {
     }
     
     // MARK: - Selectors
-    
     // MARK: - UI Setup
     private func configureUI() {
         NSLayoutConstraint.activate([
@@ -76,7 +75,5 @@ class TradeListTableViewCell: UITableViewCell {
             listStackView.heightAnchor.constraint(equalToConstant: 50),
         ])
     }
-    
 }
-
 // MARK: - Extension

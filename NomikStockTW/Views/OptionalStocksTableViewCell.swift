@@ -43,6 +43,10 @@ class OptionalStocksTableViewCell: UITableViewCell {
         
         bindView()
         publisherFN()
+        
+        Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.fetchFavoritesStockData()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -83,7 +87,7 @@ class OptionalStocksTableViewCell: UITableViewCell {
     }
     
     private func publisherFN() {
-        PublisherManerger.shared.favoriteRefreshPublisher.receive(on: DispatchQueue.main)
+        PublisherManerger.shared.favoriteRefreshPublisher
             .sink { [weak self] in
                 self?.bindView()
             }

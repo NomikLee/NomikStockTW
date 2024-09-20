@@ -6,10 +6,9 @@
 //
 
 import Foundation
-import FirebaseAuth
-import FirebaseFirestore
 import Combine
-import FirebaseStorage
+import UIKit
+import FirebaseAuth
 
 class FirestoreViewModels: ObservableObject {
     
@@ -30,7 +29,7 @@ class FirestoreViewModels: ObservableObject {
                 case .finished:
                     PublisherManerger.shared.logoImageChangePublisher.send()
                 case .failure(let error):
-                    break
+                    print(error.localizedDescription)
                 }
             }, receiveValue: { [weak self] url in
                 self?.uploadURL = url
@@ -47,7 +46,7 @@ class FirestoreViewModels: ObservableObject {
                 case .finished:
                     break
                 case .failure(let error):
-                    break
+                    print(error.localizedDescription)
                 }
             } receiveValue: { [weak self] in
                 print("照片路徑更新完成")
@@ -62,7 +61,7 @@ class FirestoreViewModels: ObservableObject {
                 case .finished:
                     break
                 case .failure(let error):
-                    break
+                    print(error.localizedDescription)
                 }
             }, receiveValue: { [weak self] data in
                 if let image = UIImage(data: data) {
@@ -146,4 +145,22 @@ class FirestoreViewModels: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    
+    func updateMoneyData(with money: String) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        FirestoreManager.shared.updateMoney(from: uid, money: money).receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            } receiveValue: { _ in
+                print("總資產更新完成")
+            }
+            .store(in: &cancellables)
+    }
 }
+
+

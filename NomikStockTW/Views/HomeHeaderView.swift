@@ -18,7 +18,7 @@ class HomeHeaderView: UIView {
     private let nameHeaderLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Hi,Nomik!"
+        label.text = "Hi,____"
         label.font = .systemFont(ofSize: 20, weight: .bold)
         label.textColor = .label
         label.numberOfLines = 0
@@ -77,14 +77,14 @@ class HomeHeaderView: UIView {
         return label
     }()
     
-    private let profitTodayLabel: UILabel = {
+    private let totalCurrencyLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "$1,580 (1.53%)"
-        label.font = .systemFont(ofSize: 16, weight: .bold)
-        label.textColor = .systemRed
         label.numberOfLines = 0
-        label.textAlignment = .left
+        label.text = "TWD"
+        label.font = .systemFont(ofSize: 20, weight: .heavy)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .right
         return label
     }()
     
@@ -98,14 +98,16 @@ class HomeHeaderView: UIView {
         addSubview(balanceHeaderView)
         balanceHeaderView.addSubview(titleBalanceLabel)
         balanceHeaderView.addSubview(totalBalanceLabel)
-        balanceHeaderView.addSubview(profitTodayLabel)
+        balanceHeaderView.addSubview(totalCurrencyLabel)
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(userHeaderImageViewTap))
         userHeaderImageView.addGestureRecognizer(tapGesture)
         
         configureUI()
         bindView()
-        publisherFN()
+        publisherFn()
+        updateTotelMoneyFn()
+        
     }
     
     override func layoutSubviews() {
@@ -119,6 +121,7 @@ class HomeHeaderView: UIView {
     
     // MARK: - Functions
     private func bindView() {
+        
         firestoreViewModel.fetchFirestoreMainData()
         firestoreViewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] data in
@@ -146,12 +149,19 @@ class HomeHeaderView: UIView {
         balanceHeaderView.layer.insertSublayer(gradientLayer, at: 0)
     }
     
-    private func publisherFN() {
-        PublisherManerger.shared.logoImageChangePublisher.receive(on: DispatchQueue.main)
+    private func publisherFn() {
+        PublisherManerger.shared.logoImageChangePublisher
             .sink { [weak self] in
                 self?.bindView()
             }
             .store(in: &cancellables)
+    }
+    
+    private func updateTotelMoneyFn() {
+        PublisherManerger.shared.updateTotelMoneyPublisher.sink { [weak self] _ in
+            self?.firestoreViewModel.fetchFirestoreMainData()
+        }
+        .store(in: &cancellables)
     }
     
     // MARK: - Selectors
@@ -180,7 +190,7 @@ class HomeHeaderView: UIView {
             userHeaderImageView.widthAnchor.constraint(equalToConstant: 50),
             
             balanceHeaderView.topAnchor.constraint(equalTo: userHeaderImageView.bottomAnchor, constant: 20),
-            balanceHeaderView.heightAnchor.constraint(equalToConstant: 150),
+            balanceHeaderView.heightAnchor.constraint(equalToConstant: 100),
             balanceHeaderView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
             balanceHeaderView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
         ])
@@ -194,16 +204,15 @@ class HomeHeaderView: UIView {
             
             totalBalanceLabel.topAnchor.constraint(equalTo: titleBalanceLabel.bottomAnchor, constant: 10),
             totalBalanceLabel.leadingAnchor.constraint(equalTo: titleBalanceLabel.leadingAnchor),
-            totalBalanceLabel.trailingAnchor.constraint(equalTo: titleBalanceLabel.trailingAnchor),
+            totalBalanceLabel.widthAnchor.constraint(equalToConstant: 250),
             totalBalanceLabel.heightAnchor.constraint(equalToConstant: 30),
             
-            profitTodayLabel.topAnchor.constraint(equalTo: totalBalanceLabel.bottomAnchor, constant: 10),
-            profitTodayLabel.leadingAnchor.constraint(equalTo: totalBalanceLabel.leadingAnchor),
-            profitTodayLabel.trailingAnchor.constraint(equalTo: totalBalanceLabel.trailingAnchor),
-            profitTodayLabel.heightAnchor.constraint(equalToConstant: 30)
+            totalCurrencyLabel.bottomAnchor.constraint(equalTo: totalBalanceLabel.bottomAnchor),
+            totalCurrencyLabel.leadingAnchor.constraint(equalTo: totalBalanceLabel.trailingAnchor),
+            totalCurrencyLabel.trailingAnchor.constraint(equalTo: balanceHeaderView.trailingAnchor, constant: -20),
+            totalCurrencyLabel.heightAnchor.constraint(equalToConstant: 30),
             
         ])
     }
-    
-    // MARK: - Extension
 }
+// MARK: - Extension

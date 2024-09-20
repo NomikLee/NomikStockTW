@@ -22,14 +22,14 @@ class AuthManager {
             .eraseToAnyPublisher()
     }
     
-    func userInfoSave(uid: String, gender: String, birthday: String, firstName: String, lastName: String) {
+    private func userInfoSave(uid: String, gender: String, birthday: String, firstName: String, lastName: String) {
         let db = Firestore.firestore()
         let treasuryData: [String: [String]] = [
-                "1": ["2330", "台積電", "1", "900"]
+                "0": ["0", "0", "0", "0"]
             ]
         
         let listData: [String: [String]] = [
-                "0": ["2024-08-01", "2330", "台積電", "+1", "900"]
+                "0": ["0", "0", "0", "0", "0"]
             ]
         
         let userMainInfo = db.collection("users").document(uid)
@@ -40,7 +40,7 @@ class AuthManager {
             "birthday" : birthday,
             "firstName" : firstName,
             "lastName" : lastName,
-            "money": "1500000",
+            "money": "2000000",
             "favorites" : ["2330"],
             "treasury" : treasuryData,
             "list" : listData

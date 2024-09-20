@@ -42,10 +42,8 @@ class StocksRankTableViewCell: UITableViewCell {
         bindView()
         
         Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
-            PublisherManerger.shared.favoriteRefreshPublisher.send()
             self?.bindView()
         }
-        
     }
     
     required init?(coder: NSCoder) {

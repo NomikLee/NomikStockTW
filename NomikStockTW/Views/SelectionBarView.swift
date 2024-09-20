@@ -133,7 +133,5 @@ class SelectionBarView: UIView {
             bottomLineBar.heightAnchor.constraint(equalToConstant: 4)
         ])
     }
-    // MARK: - Extension
-    
-
 }
+// MARK: - Extension

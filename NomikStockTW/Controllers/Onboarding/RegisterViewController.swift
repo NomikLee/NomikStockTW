@@ -12,10 +12,9 @@ import FirebaseAuth
 class RegisterViewController: UIViewController {
     
     // MARK: - Variables
-    private var viewModel = AuthViewModels()
-    private var cancellables = Set<AnyCancellable>()
+    private var authViewModel = AuthViewModels()
     private let genderData = ["Male", "Female"]
-    
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
     private let gradientLayer: CAGradientLayer = {
@@ -243,7 +242,6 @@ class RegisterViewController: UIViewController {
         gradientLayer.frame = CGRect(origin: .zero, size: registerScrollView.contentSize)
     }
     
-    
     // MARK: - Functions
     private func bindViews() {
         emailTextView.addTarget(self, action: #selector(didChangeEmailField), for: .editingChanged)
@@ -252,14 +250,14 @@ class RegisterViewController: UIViewController {
         firstNameTextView.addTarget(self, action: #selector(didChangeFirstNameField), for: .editingChanged)
         lastNameTextView.addTarget(self, action: #selector(didChangeLastNameField), for: .editingChanged)
         
-        viewModel.$isAuthValid.receive(on: DispatchQueue.main)
+        authViewModel.$isAuthValid.receive(on: DispatchQueue.main)
             .sink { [weak self] valid in
                 self?.confirmButton.isEnabled = valid
             }
             .store(in: &cancellables)
         
         //當創造一個帳號後user不為nil檢查 navigationController 的 viewControllers 組中的第一個viewController是否為 StartedViewController是的話刪除
-        viewModel.$user.receive(on: DispatchQueue.main)
+        authViewModel.$user.receive(on: DispatchQueue.main)
             .sink { [weak self] user in
                 guard user != nil else { return }
                 let loadVC = UINavigationController(rootViewController: ReloadViewController())
@@ -268,7 +266,7 @@ class RegisterViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$error.receive(on: DispatchQueue.main)
+        authViewModel.$error.receive(on: DispatchQueue.main)
             .sink { [weak self] errorString in
                 guard let error = errorString else { return }
                 self?.errorAlert(error)
@@ -285,32 +283,32 @@ class RegisterViewController: UIViewController {
     
     // MARK: - Selectors
     @objc private func didChangeLastNameField() {
-        viewModel.lastNameText = lastNameTextView.text
-        viewModel.checkAuthText()
+        authViewModel.lastNameText = lastNameTextView.text
+        authViewModel.checkAuthText()
     }
     
     @objc private func didChangeFirstNameField() {
-        viewModel.firstNameText = firstNameTextView.text
-        viewModel.checkAuthText()
+        authViewModel.firstNameText = firstNameTextView.text
+        authViewModel.checkAuthText()
     }
     
     @objc private func didChangePasswordCheckField() {
-        viewModel.passwordCheckText = passwordCheckTextView.text
-        viewModel.checkAuthText()
+        authViewModel.passwordCheckText = passwordCheckTextView.text
+        authViewModel.checkAuthText()
     }
     
     @objc private func didChangePasswordField() {
-        viewModel.passwordText = passwordTextView.text
-        viewModel.checkAuthText()
+        authViewModel.passwordText = passwordTextView.text
+        authViewModel.checkAuthText()
     }
     
     @objc private func didChangeEmailField() {
-        viewModel.emailText = emailTextView.text
-        viewModel.checkAuthText()
+        authViewModel.emailText = emailTextView.text
+        authViewModel.checkAuthText()
     }
     
     @objc private func didTapRegister() {
-        viewModel.createUser()
+        authViewModel.createUser()
     }
     
     @objc private func dateSelectChange(){
@@ -318,8 +316,8 @@ class RegisterViewController: UIViewController {
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         birthdayTextView.text = formatter.string(from: birthdayDatePicker.date)
-        viewModel.birthdayText = birthdayTextView.text
-        viewModel.checkAuthText()
+        authViewModel.birthdayText = birthdayTextView.text
+        authViewModel.checkAuthText()
     }
     
     @objc private func dismissKeyboard() {
@@ -424,7 +422,7 @@ extension RegisterViewController: UIPickerViewDelegate, UIPickerViewDataSource {
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         genderTextView.text = genderData[row]
-        viewModel.genderText = genderTextView.text
-        viewModel.checkAuthText()
+        authViewModel.genderText = genderTextView.text
+        authViewModel.checkAuthText()
     }
 }

@@ -137,7 +137,6 @@ class StartedViewController: UIViewController {
             enterButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -30),
             enterButton.bottomAnchor.constraint(equalTo: loginButton.topAnchor, constant: -15),
             enterButton.heightAnchor.constraint(equalToConstant: 100),
-            
         ])
     }
 }

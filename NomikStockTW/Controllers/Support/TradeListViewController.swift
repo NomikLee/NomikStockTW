@@ -11,8 +11,7 @@ import Combine
 class TradeListViewController: UIViewController {
 
     // MARK: - Variables
-    private var viewModel = FirestoreViewModels()
-    
+    private var firestoreViewModel = FirestoreViewModels()
     private var tradeListArray: [String: [String]] = [:]
     private var cancellables = Set<AnyCancellable>()
     
@@ -34,6 +33,10 @@ class TradeListViewController: UIViewController {
         
         let tradeheaderView = TradeHeaderView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 50))
         tradeListTableView.tableHeaderView = tradeheaderView
+        
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        tradeListTableView.refreshControl = refreshControl
 
         bindView()
     }
@@ -45,8 +48,8 @@ class TradeListViewController: UIViewController {
     
     // MARK: - Functions
     private func bindView() {
-        viewModel.fetchFirestoreMainData()
-        viewModel.$mainDatas.receive(on: DispatchQueue.main)
+        firestoreViewModel.fetchFirestoreMainData()
+        firestoreViewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] dataArray in
                 if let dataArray = dataArray?.list {
                     self?.tradeListArray = dataArray
@@ -56,8 +59,14 @@ class TradeListViewController: UIViewController {
             .store(in: &cancellables)
     }
     
-    // MARK: - Selectors
+    @objc private func refreshData() {
+        firestoreViewModel.fetchFirestoreMainData()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            self?.tradeListTableView.refreshControl?.endRefreshing()
+        }
+    }
     
+    // MARK: - Selectors
     // MARK: - UI Setup
 }
 

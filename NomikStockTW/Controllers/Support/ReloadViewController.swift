@@ -56,7 +56,6 @@ class ReloadViewController: UIViewController {
     }
     
     // MARK: - Selectors
-    
     // MARK: - UI Setup
     private func configureUI() {
         NSLayoutConstraint.activate([
@@ -66,8 +65,5 @@ class ReloadViewController: UIViewController {
             welcomeLoadLabel.heightAnchor.constraint(equalToConstant: 100)
         ])
     }
-    
-    
-
 }
 // MARK: - Extension

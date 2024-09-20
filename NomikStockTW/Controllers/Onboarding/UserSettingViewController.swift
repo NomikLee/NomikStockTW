@@ -11,7 +11,7 @@ import Combine
 class UserSettingViewController: UIViewController {
     
     // MARK: - Variables
-    private var firestoreviewModel = FirestoreViewModels()
+    private var firestoreViewModel = FirestoreViewModels()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -107,19 +107,19 @@ class UserSettingViewController: UIViewController {
     
     // MARK: - Functions
     private func bindView() {
-        firestoreviewModel.fetchUserAuthInfo()
-        firestoreviewModel.fetchFirestoreMainData()
+        firestoreViewModel.fetchUserAuthInfo()
+        firestoreViewModel.fetchFirestoreMainData()
         
-        firestoreviewModel.$emailData.receive(on: DispatchQueue.main)
+        firestoreViewModel.$emailData.receive(on: DispatchQueue.main)
             .sink { [weak self] email in
                 self?.userEmailUILabel.text = email
             }
             .store(in: &cancellables)
         
-        firestoreviewModel.$mainDatas.receive(on: DispatchQueue.main)
+        firestoreViewModel.$mainDatas.receive(on: DispatchQueue.main)
             .sink { [weak self] infoDatas in
                 if let path = infoDatas?.imagePath {
-                    self?.firestoreviewModel.downloadImage(from: path)
+                    self?.firestoreViewModel.downloadImage(from: path)
                 }
                 self?.userbirthdayUILabel.text = infoDatas?.birthday
                 if let firstName = infoDatas?.firstName, let lastName = infoDatas?.lastName {
@@ -128,7 +128,7 @@ class UserSettingViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        firestoreviewModel.$userImage.receive(on: DispatchQueue.main)
+        firestoreViewModel.$userImage.receive(on: DispatchQueue.main)
             .sink { [weak self] image in
                 self?.userImageView.image = image
             }
@@ -141,7 +141,7 @@ class UserSettingViewController: UIViewController {
     }
     
     private func publisherFN() {
-        PublisherManerger.shared.logoImageChangePublisher.receive(on: DispatchQueue.main)
+        PublisherManerger.shared.logoImageChangePublisher
             .sink { [weak self] in
                 self?.bindView()
             }
@@ -150,7 +150,7 @@ class UserSettingViewController: UIViewController {
     
     // MARK: - Selectors
     @objc private func logoutButtonTap() {
-        PublisherManerger.shared.logoutButtonTapPublisher.send()
+        PublisherManerger.shared.signOutButtonTapPublisher.send()
     }
     
     @objc private func imageTapped() {
@@ -212,7 +212,7 @@ class UserSettingViewController: UIViewController {
 extension UserSettingViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let selectImage = info[.originalImage] as? UIImage {
-            firestoreviewModel.uploadImage(selectImage)
+            firestoreViewModel.uploadImage(selectImage)
         }
         dismiss(animated: true)
     }

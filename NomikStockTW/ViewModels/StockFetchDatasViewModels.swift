@@ -18,6 +18,7 @@ final class StockFetchDatasViewModels: ObservableObject {
     @Published var intradayQuoteDatas: IntradayQuoteModels?
     @Published var intradayCandlesDatas: IntradayCandlesModels?
     @Published var favoritesIntradayQuoteDatas: IntradayQuoteModels?
+    @Published var profitAndLossQuoteDatas: IntradayQuoteModels?
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -132,5 +133,23 @@ final class StockFetchDatasViewModels: ObservableObject {
                 self?.favoritesIntradayQuoteDatas = favoritesIntradayQuoteData
             }
             .store(in: &cancellables)
+    }
+    
+    func profitAndLossQuoteFetchDatas(with symbols: [String]) {
+        for (_, symbol) in symbols.enumerated() {
+            APIServiceManerger.shared.getProfitAndLossQuote(symbol: symbol)
+                .receive(on: DispatchQueue.main)
+                .sink { completion in
+                    switch completion {
+                    case .finished:
+                        break
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                } receiveValue: { [weak self] profitAndLossQuoteData in
+                    self?.profitAndLossQuoteDatas = profitAndLossQuoteData
+                }
+                .store(in: &cancellables)
+        }
     }
 }
